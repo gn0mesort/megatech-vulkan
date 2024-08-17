@@ -76,5 +76,7 @@ doc_env.set('DOXYGEN_STRIP_FROM_PATH', ' '.join(doc_strips))
 extra_css = files('documentation/extra.css')[0]
 doc_env.set('DOXYGEN_HTML_EXTRA_STYLESHEET', extra_css.full_path())
 doc_env.set('DOXYGEN_ENABLED_SECTIONS', ' '.join(get_option('enabled_doxygen_sections')))
+doc_defines = [ 'VK_VERSION_1_0=1', '__DOXYGEN__=1' ]
+doc_env.set('DOXYGEN_PREDEFINED', ' '.join(doc_defines))
 docs = custom_target(output: 'documentation', build_always_stale: true,
                      command: [ doxygen, files('Doxyfile') ], env: doc_env, depends: headers)
