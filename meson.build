@@ -80,3 +80,4 @@ doc_defines = [ 'VK_VERSION_1_0=1', '__DOXYGEN__=1' ]
 doc_env.set('DOXYGEN_PREDEFINED', ' '.join(doc_defines))
 docs = custom_target(output: 'documentation', build_always_stale: true,
                      command: [ doxygen, files('Doxyfile') ], env: doc_env, depends: headers)
+subdir('tests')
