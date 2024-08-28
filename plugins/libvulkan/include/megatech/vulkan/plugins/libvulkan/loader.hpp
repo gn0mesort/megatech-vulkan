@@ -6,6 +6,7 @@
 namespace megatech::vulkan::plugins::libvulkan {
 
   class loader final : public megatech::vulkan::loader {
+  public:
     loader();
     loader(const loader& other);
     loader(loader&& other) = delete;
