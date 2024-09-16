@@ -16,3 +16,4 @@ megatech_vulkan_plugin_libvulkan_lib = library('@0@-plugin-libvulkan'.format(mes
 megatech_vulkan_plugin_libvulkan_dep = declare_dependency(link_with: megatech_vulkan_plugin_libvulkan_lib,
                                                           include_directories: includes,
                                                           dependencies: megatech_vulkan_dep)
+subdir('tests')

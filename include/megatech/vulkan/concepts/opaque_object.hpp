@@ -1,5 +1,6 @@
 #ifndef MEGATECH_VULKAN_CONCEPTS_HPP
 #define MEGATECH_VULKAN_CONCEPTS_HPP
+
 #include <concepts>
 #include <memory>
 

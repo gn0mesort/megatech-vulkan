@@ -1,8 +1,12 @@
+#define VK_NO_PROTOTYPES (1)
+#define MEGATECH_VULKAN_INCLUDE_VULKAN_H (1)
 #include "megatech/vulkan/loader.hpp"
 
 #include <utility>
 
 #include <megatech/vulkan/dispatch/tables.hpp>
+
+#include "megatech/vulkan/layer_description.hpp"
 
 #include "megatech/vulkan/internal/base/loader_impl.hpp"
 
@@ -38,5 +42,10 @@ namespace megatech::vulkan {
   const dispatch::global::table& loader::dispatch_table() const {
     return m_impl->dispatch_table();
   }
+
+  const std::vector<layer_description>& loader::available_layers() const {
+    return m_impl->available_layers();
+  }
+
 
 }

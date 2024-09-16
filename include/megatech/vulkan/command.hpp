@@ -1,8 +1,13 @@
 #ifndef MEGATECH_VULKAN_COMMAND_HPP
 #define MEGATECH_VULKAN_COMMAND_HPP
+
 #include <concepts>
 #include <memory>
 #include <type_traits>
+
+#if defined(MEGATECH_VULKAN_INCLUDE_VULKAN_H) && __has_include(<vulkan/vulkan.h>)
+  #include <vulkan/vulkan.h>
+#endif
 
 #include "concepts/opaque_object.hpp"
 #include "concepts/vulkan_function.hpp"

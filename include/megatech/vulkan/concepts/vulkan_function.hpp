@@ -1,12 +1,13 @@
 #ifndef MEGATECH_VULKAN_CONCEPTS_VULKAN_FUNCTION_HPP
 #define MEGATECH_VULKAN_CONCEPTS_VULKAN_FUNCTION_HPP
+
 #include <cstddef>
 
 #include <concepts>
 #include <tuple>
 #include <type_traits>
 
-#ifdef MEGATECH_VULKAN_INCLUDE_VULKAN_H
+#if defined(MEGATECH_VULKAN_INCLUDE_VULKAN_H) && __has_include(<vulkan/vulkan.h>)
   #include <vulkan/vulkan.h>
 #endif
 

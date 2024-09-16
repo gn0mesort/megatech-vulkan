@@ -1,10 +1,12 @@
 #ifndef MEGATECH_VULKAN_LOADER_HPP
 #define MEGATECH_VULKAN_LOADER_HPP
+
 #include <cinttypes>
 
 #include <memory>
+#include <vector>
 
-#ifdef MEGATECH_VULKAN_INCLUDE_VULKAN_H
+#if defined(MEGATECH_VULKAN_INCLUDE_VULKAN_H) && __has_include(<vulkan/vulkan.h>)
   #include <vulkan/vulkan.h>
 #endif
 
@@ -33,6 +35,8 @@ namespace megatech::vulkan::dispatch::global {
 
 namespace megatech::vulkan {
 
+  class layer_description;
+
   class loader {
   public:
     using implementation_type = internal::base::loader_impl;
@@ -53,10 +57,12 @@ namespace megatech::vulkan {
     loader& operator=(const loader& rhs) = delete;
     loader& operator=(loader&& rhs) = delete;
 
+    const std::vector<layer_description>& available_layers() const;
+    const dispatch::global::table& dispatch_table() const;
+
     const implementation_type& implementation() const;
     implementation_type& implementation();
     std::shared_ptr<const implementation_type> share_implementation() const;
-    const dispatch::global::table& dispatch_table() const;
 #ifdef VK_VERSION_1_0
     template <concepts::command_tag Tag>
     inline command<loader, typename Tag::function_pointer_type> resolve() const {

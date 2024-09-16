@@ -38,6 +38,10 @@ endif
 headers = [ ]
 subdir('generated/include')
 vulkan_dep = dependency('vulkan')
+catch2_dep = disabler()
+if get_option('tests').allowed() or get_option('benchmarks').allowed()
+  catch2_dep = dependency('catch2')
+endif
 megatech_vulkan_dispatch_dep = dependency('megatech-vulkan-dispatch',
                                           fallback: [ 'megatech-vulkan-dispatch', 'megatech_vulkan_dispatch_dep' ])
 dependencies = [
@@ -48,7 +52,8 @@ includes = [
   include_directories('include')
 ]
 sources = [
-  files('src/megatech/vulkan/error.cpp', 'src/megatech/vulkan/loader.cpp'),
+  files('src/megatech/vulkan/error.cpp', 'src/megatech/vulkan/version.cpp',
+        'src/megatech/vulkan/layer_description.cpp', 'src/megatech/vulkan/loader.cpp'),
   files('src/megatech/vulkan/internal/base/loader_impl.cpp'),
   headers
 ]
@@ -57,6 +62,7 @@ megatech_vulkan_lib = library(meson.project_name(), sources, include_directories
 megatech_vulkan_dep = declare_dependency(link_with: megatech_vulkan_lib, include_directories: includes,
                                          sources: headers)
 subdir('plugins')
+subdir('tests')
 doxygen = find_program('doxygen', disabler: true)
 doc_env = environment()
 doc_env.set('DOXYGEN_PROJECT_NAME', meson.project_name())
@@ -80,4 +86,3 @@ doc_defines = [ 'VK_VERSION_1_0=1', '__DOXYGEN__=1' ]
 doc_env.set('DOXYGEN_PREDEFINED', ' '.join(doc_defines))
 docs = custom_target(output: 'documentation', build_always_stale: true,
                      command: [ doxygen, files('Doxyfile') ], env: doc_env, depends: headers)
-subdir('tests')

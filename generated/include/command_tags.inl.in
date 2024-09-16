@@ -33,14 +33,15 @@
  */
 #ifndef MEGATECH_VULKAN_COMMAND_TAGS_INL
 #define MEGATECH_VULKAN_COMMAND_TAGS_INL
+
 #include <cinttypes>
 #include <cstddef>
 
-#ifdef MEGATECH_VULKAN_INCLUDE_VULKAN_H
+#if defined(MEGATECH_VULKAN_INCLUDE_VULKAN_H) && __has_include(<vulkan/vulkan.h>)
   #include <vulkan/vulkan.h>
 #endif
-#ifdef VK_VERSION_1_0
 
+#ifdef VK_VERSION_1_0
 /// @cond INTERNAL
 /**
  * @def MEGATECH_VULKAN_COMMAND_TAG
@@ -68,7 +69,6 @@ namespace megatech::vulkan::command_tags {
 /// @endcond
 
 }
-
 #endif
 
 #endif
