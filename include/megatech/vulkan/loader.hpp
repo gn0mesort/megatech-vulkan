@@ -1,8 +1,6 @@
 #ifndef MEGATECH_VULKAN_LOADER_HPP
 #define MEGATECH_VULKAN_LOADER_HPP
 
-#include <cinttypes>
-
 #include <memory>
 #include <vector>
 
@@ -10,13 +8,14 @@
   #include <vulkan/vulkan.h>
 #endif
 
+#if defined(MEGATECH_VULKAN_INCLUDE_MEGATECH_DISPATCH_HPP) && __has_include(<megatech/vulkan/dispatch.hpp>)
+  #include <megatech/vulkan/dispatch.hpp>
+#endif
+
 #include "command.hpp"
 #include "error.hpp"
 
 #include "concepts/command_tag.hpp"
-
-#include "internal/base/fnv_1a.hpp"
-
 
 namespace megatech::vulkan::internal::base {
 
@@ -27,11 +26,13 @@ namespace megatech::vulkan::internal::base {
 
 }
 
+#ifndef MEGATECH_VULKAN_DISPATCH_HPP
 namespace megatech::vulkan::dispatch::global {
 
   class table;
 
 }
+#endif
 
 namespace megatech::vulkan {
 
@@ -63,11 +64,11 @@ namespace megatech::vulkan {
     const implementation_type& implementation() const;
     implementation_type& implementation();
     std::shared_ptr<const implementation_type> share_implementation() const;
-#ifdef VK_VERSION_1_0
+#if defined(VK_VERSION_1_0) && defined(MEGATECH_VULKAN_DISPATCH_HPP)
     template <concepts::command_tag Tag>
     inline command<loader, typename Tag::function_pointer_type> resolve() const {
-      constexpr auto hash = internal::base::fnv_1a_cstr(Tag::name());
-      const auto ppfn = resolve(hash);
+      constexpr auto hash = megatech::vulkan::dispatch::internal::base::fnv_1a_cstr(Tag::name());
+      const auto ppfn = dispatch_table()(hash);
       if (!ppfn) [[unlikely]]
       {
         throw error{ "The Vulkan command could not be resolved." };
