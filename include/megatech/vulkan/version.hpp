@@ -26,6 +26,7 @@ namespace megatech::vulkan {
     static constexpr std::uint_least16_t max_patch_version() {
       return 0xfff;
     }
+
     explicit version(const std::uint32_t data) noexcept;
     version(const std::uint_least8_t variant, const std::uint_least8_t major, const std::uint_least16_t minor,
             const std::uint_least16_t patch);
@@ -37,6 +38,7 @@ namespace megatech::vulkan {
     version& operator=(const version& rhs) = default;
     version& operator=(version&& rhs) = default;
     std::strong_ordering operator<=>(const version& rhs) const noexcept;
+    bool operator==(const version& rhs) const = default;
 
     explicit operator std::uint32_t() const noexcept;
 

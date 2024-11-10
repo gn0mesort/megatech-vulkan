@@ -12,7 +12,7 @@ namespace megatech::vulkan {
     return m_specification_version;
   }
 
-  const version& layer_description::implementation_version() const {
+  std::uint32_t layer_description::implementation_version() const {
     return m_implementation_version;
   }
 

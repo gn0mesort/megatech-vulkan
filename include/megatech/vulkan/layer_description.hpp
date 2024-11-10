@@ -20,10 +20,9 @@ namespace megatech::vulkan {
   class layer_description final {
   private:
     version m_specification_version{ 0, 1, 0, 0 };
-    version m_implementation_version{ 0, 1, 0, 0 };
+    std::uint32_t m_implementation_version{ 1 };
     std::string m_name{ };
     std::string m_description{ };
-
   public:
 #ifdef VK_VERSION_1_0
     layer_description(const VkLayerProperties& properties, const internal::tag&);
@@ -37,7 +36,7 @@ namespace megatech::vulkan {
     layer_description& operator=(layer_description&& rhs) = default;
 
     const version& specification_version() const;
-    const version& implementation_version() const;
+    std::uint32_t implementation_version() const;
     const std::string& name() const;
     const std::string& description() const;
   };

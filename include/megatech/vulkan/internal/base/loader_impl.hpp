@@ -1,6 +1,9 @@
 #ifndef MEGATECH_VULKAN_INTERNAL_BASE_LOADER_IMPL_HPP
 #define MEGATECH_VULKAN_INTERNAL_BASE_LOADER_IMPL_HPP
+
 #include <memory>
+
+#include <megatech/vulkan/dispatch/tables.hpp>
 
 #include "../../loader.hpp"
 #include "../../layer_description.hpp"

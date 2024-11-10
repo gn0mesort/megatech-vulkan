@@ -6,7 +6,6 @@
 #include <exception>
 #include <source_location>
 #include <string>
-#include <sstream>
 
 #if defined(MEGATECH_VULKAN_INCLUDE_VULKAN_H) && __has_include(<vulkan/vulkan.h>)
   #include <vulkan/vulkan.h>

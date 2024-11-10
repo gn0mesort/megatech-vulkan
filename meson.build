@@ -21,22 +21,6 @@ import megatech.vulkan.applications
 if has_tools.returncode() != 0
   error('Please ensure that all Python requirements are installed.')
 endif
-extensions = ','.join(get_option('extensions'))
-template_arguments = [ ]
-generator = [ find_program('dispatch-table-generator'), '-o@OUTPUT@', '--api=@0@'.format(get_option('api')),
-              '--api-version=@0@'.format(get_option('api_version')), '--extensions=@0@'.format(extensions) ]
-if not get_option('generator_warnings').allowed()
-  generator += '--quiet'
-endif
-specification = get_option('specification')
-if specification != ''
-  generator += '--specification=@0@'.format(specification)
-endif
-if not get_option('deprecated_vulkan_features').allowed()
-  generator += '--no-enable-deprecated'
-endif
-headers = [ ]
-subdir('generated/include')
 vulkan_dep = dependency('vulkan')
 catch2_dep = disabler()
 if get_option('tests').allowed() or get_option('benchmarks').allowed()
@@ -55,13 +39,24 @@ sources = [
   files('src/megatech/vulkan/error.cpp', 'src/megatech/vulkan/version.cpp',
         'src/megatech/vulkan/layer_description.cpp', 'src/megatech/vulkan/loader.cpp'),
   files('src/megatech/vulkan/internal/base/loader_impl.cpp'),
-  headers
 ]
 megatech_vulkan_lib = library(meson.project_name(), sources, include_directories: includes,
                               dependencies: dependencies, version: version)
-megatech_vulkan_dep = declare_dependency(link_with: megatech_vulkan_lib, include_directories: includes,
-                                         sources: headers)
-subdir('plugins')
+megatech_vulkan_dep = declare_dependency(link_with: megatech_vulkan_lib, include_directories: includes)
+dependencies = [
+  vulkan_dep,
+  megatech_vulkan_dispatch_dep,
+  megatech_vulkan_dep
+]
+sources = [
+  files('src/megatech/vulkan/adaptors/libvulkan/loader.cpp'),
+  files('src/megatech/vulkan/adaptors/libvulkan/internal/base/loader_impl.cpp')
+]
+megatech_vulkan_adaptor_libvulkan_lib = library('@0@-adaptor-@1@'.format(meson.project_name(), 'libvulkan'), sources,
+                                                include_directories: includes, dependencies: dependencies,
+                                                version: version)
+megatech_vulkan_adaptor_libvulkan_dep = declare_dependency(link_with: megatech_vulkan_adaptor_libvulkan_lib,
+                                                           include_directories: includes)
 subdir('tests')
 doxygen = find_program('doxygen', disabler: true)
 doc_env = environment()
@@ -71,9 +66,6 @@ doc_env.set('DOXYGEN_OUTPUT_DIRECTORY', meson.current_build_dir() / 'documentati
 doc_inputs = [ meson.current_source_dir() / 'include', meson.current_source_dir() / 'generated',
                files('README.md')[0].full_path(), meson.current_source_dir() / 'documentation' ]
 doc_env.set('DOXYGEN_USE_MDFILE_AS_MAINPAGE', doc_inputs[2])
-foreach header : headers
-  doc_inputs += [ header.full_path() ]
-endforeach
 doc_env.set('DOXYGEN_INPUT', ' '.join(doc_inputs))
 doc_excludes = [ meson.current_source_dir() / 'include/megatech/vulkan/internal' ]
 doc_strips = [ meson.current_build_dir() / 'generated/include', meson.current_build_dir() / 'generated/src',
@@ -85,4 +77,4 @@ doc_env.set('DOXYGEN_ENABLED_SECTIONS', ' '.join(get_option('enabled_doxygen_sec
 doc_defines = [ 'VK_VERSION_1_0=1', '__DOXYGEN__=1' ]
 doc_env.set('DOXYGEN_PREDEFINED', ' '.join(doc_defines))
 docs = custom_target(output: 'documentation', build_always_stale: true,
-                     command: [ doxygen, files('Doxyfile') ], env: doc_env, depends: headers)
+                     command: [ doxygen, files('Doxyfile') ], env: doc_env)
