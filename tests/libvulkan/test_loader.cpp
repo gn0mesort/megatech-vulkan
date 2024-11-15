@@ -40,21 +40,39 @@
 
 using megatech::vulkan::adaptors::libvulkan::loader;
 
-TEST_CASE("Loaders should be default initializable.", "[loader][plugin-libvulkan]") {
+TEST_CASE("Loaders should be default initializable.", "[loader][adaptor-libvulkan]") {
   REQUIRE_NOTHROW(loader{ });
 }
 
-TEST_CASE("Loaders should be explicitly copy initializable.", "[loader][plugin-libvulkan]") {
+TEST_CASE("Loaders should be explicitly copy initializable.", "[loader][adaptor-libvulkan]") {
   auto ldr = loader{ };
   REQUIRE_NOTHROW(loader{ ldr });
 }
 
-TEST_CASE("Loaders should have a shareable implementation pointer.", "[loader][plugin-libvulkan]") {
+TEST_CASE("Loaders should be copy assignable.", "[loader][adaptor-libvulkan]") {
+  auto ldr = loader{ };
+  auto cpy = loader{ };
+  REQUIRE_NOTHROW(cpy = ldr);
+  REQUIRE(&cpy.implementation() != &ldr.implementation());
+  {
+    auto ldrc = ldr.available_layers().begin();
+    auto cpyc = cpy.available_layers().begin();
+    for (; ldrc != ldr.available_layers().end() && cpyc != cpy.available_layers().end(); ++ldrc, ++cpyc)
+    {
+      REQUIRE(ldrc->name() == cpyc->name());
+      REQUIRE(ldrc->description() == cpyc->description());
+      REQUIRE(ldrc->specification_version() == cpyc->specification_version());
+      REQUIRE(ldrc->implementation_version() == ldrc->implementation_version());
+    }
+  }
+}
+
+TEST_CASE("Loaders should have a shareable implementation pointer.", "[loader][adaptor-libvulkan]") {
   const auto ldr = loader{ };
   REQUIRE(ldr.share_implementation() != nullptr);
 }
 
-TEST_CASE("Loaders should be able to retrieve a list of Vulkan layers for the client.", "[loader][plugin-libvulkan]") {
+TEST_CASE("Loaders should be able to retrieve a list of Vulkan layers for the client.", "[loader][adaptor-libvulkan]") {
   using megatech::vulkan::version;
   const auto ldr = loader{ };
   const auto ldr_layers = ldr.available_layers();
