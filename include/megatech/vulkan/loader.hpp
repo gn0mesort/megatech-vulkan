@@ -25,9 +25,9 @@ namespace megatech::vulkan {
   public:
     using implementation_type = internal::base::loader_impl;
   protected:
-    loader(internal::base::loader_impl*&& impl);
+    loader(implementation_type*&& impl);
 
-    std::shared_ptr<internal::base::loader_impl> m_impl;
+    std::shared_ptr<implementation_type> m_impl;
   public:
     loader() = delete;
     loader(const loader& other) = delete;
