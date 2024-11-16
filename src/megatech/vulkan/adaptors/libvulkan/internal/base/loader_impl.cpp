@@ -7,6 +7,7 @@ extern "C" VKAPI_ATTR PFN_vkVoidFunction VKAPI_CALL vkGetInstanceProcAddr(VkInst
 #include <cinttypes>
 
 #include <utility>
+#include <vector>
 
 #include <megatech/vulkan/dispatch/tables.hpp>
 
@@ -27,7 +28,7 @@ namespace megatech::vulkan::adaptors::libvulkan::internal::base {
     VK_CHECK(vkEnumerateInstanceLayerProperties(&sz, properties.data()));
     for (const auto& property : properties)
     {
-      m_available_layers.emplace_back(property, megatech::vulkan::internal::tag{ });
+      m_available_layers.emplace(property, megatech::vulkan::internal::tag{ });
     }
   }
 

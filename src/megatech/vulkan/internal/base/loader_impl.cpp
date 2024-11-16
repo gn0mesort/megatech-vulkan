@@ -6,7 +6,7 @@ namespace megatech::vulkan::internal::base {
     return *m_gdt;
   }
 
-  const std::vector<layer_description>& loader_impl::available_layers() const {
+  const std::unordered_set<layer_description>& loader_impl::available_layers() const {
     return m_available_layers;
   }
 

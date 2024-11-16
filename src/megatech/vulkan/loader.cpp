@@ -29,7 +29,7 @@ namespace megatech::vulkan {
     return m_impl;
   }
 
-  const std::vector<layer_description>& loader::available_layers() const {
+  const std::unordered_set<layer_description>& loader::available_layers() const {
     return m_impl->available_layers();
   }
 

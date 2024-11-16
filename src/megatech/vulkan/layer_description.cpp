@@ -24,4 +24,12 @@ namespace megatech::vulkan {
     return m_description;
   }
 
+  bool layer_description::operator==(const layer_description& rhs) const {
+    return m_name == rhs.m_name;
+  }
+
+  bool layer_description::operator==(const std::string& name) const {
+    return m_name == name;
+  }
+
 }

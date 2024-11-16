@@ -2,7 +2,7 @@
 #define MEGATECH_VULKAN_LOADER_HPP
 
 #include <memory>
-#include <vector>
+#include <unordered_set>
 
 #include "defs.hpp"
 
@@ -38,13 +38,14 @@ namespace megatech::vulkan {
     loader& operator=(const loader& rhs) = delete;
     loader& operator=(loader&& rhs) = delete;
 
-    const std::vector<layer_description>& available_layers() const;
+    const std::unordered_set<layer_description>& available_layers() const;
 
     const implementation_type& implementation() const;
     implementation_type& implementation();
     std::shared_ptr<const implementation_type> share_implementation() const;
   };
 
+  MEGATECH_VULKAN_ENFORCE_CONCEPT(concepts::opaque_object<loader>);
   MEGATECH_VULKAN_ENFORCE_CONCEPT(concepts::readonly_sharable_opaque_object<loader>);
 
 }

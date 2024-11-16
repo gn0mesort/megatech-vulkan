@@ -15,7 +15,7 @@ namespace megatech::vulkan::internal::base {
     loader_impl() = default;
 
     std::unique_ptr<dispatch::global::table> m_gdt{ };
-    std::vector<layer_description> m_available_layers{ };
+    std::unordered_set<layer_description> m_available_layers{ };
   public:
     loader_impl(const loader_impl& other) = delete;
     loader_impl(loader_impl&& other) = delete;
@@ -26,7 +26,7 @@ namespace megatech::vulkan::internal::base {
     loader_impl& operator=(loader_impl&& rhs) = delete;
 
     const dispatch::global::table& dispatch_table() const;
-    const std::vector<layer_description>& available_layers() const;
+    const std::unordered_set<layer_description>& available_layers() const;
   };
 
 }

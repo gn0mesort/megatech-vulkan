@@ -13,6 +13,8 @@
 #include <megatech/vulkan/loader.hpp>
 #include <megatech/vulkan/layer_description.hpp>
 
+#include <megatech/vulkan/internal/tag.hpp>
+
 #include <megatech/vulkan/internal/base/loader_impl.hpp>
 
 #include <megatech/vulkan/adaptors/libvulkan.hpp>
@@ -74,8 +76,9 @@ TEST_CASE("Loaders should have a shareable implementation pointer.", "[loader][a
 
 TEST_CASE("Loaders should be able to retrieve a list of Vulkan layers for the client.", "[loader][adaptor-libvulkan]") {
   using megatech::vulkan::version;
+  using megatech::vulkan::layer_description;
+  using megatech::vulkan::internal::tag;
   const auto ldr = loader{ };
-  const auto ldr_layers = ldr.available_layers();
   auto vk_layers = std::vector<VkLayerProperties>{ };
   {
     auto sz = std::uint32_t{ };
@@ -84,13 +87,10 @@ TEST_CASE("Loaders should be able to retrieve a list of Vulkan layers for the cl
     vk_layers.resize(sz);
     VK_CHECK(vkEnumerateInstanceLayerProperties(&sz, vk_layers.data()));
   }
-  REQUIRE(vk_layers.size() == ldr_layers.size());
+  REQUIRE(vk_layers.size() == ldr.available_layers().size());
   for (auto i = std::uint32_t{ 0 }; i < vk_layers.size(); ++i)
   {
-    REQUIRE(version{ vk_layers[i].specVersion } == ldr_layers[i].specification_version());
-    REQUIRE(vk_layers[i].implementationVersion == ldr_layers[i].implementation_version());
-    REQUIRE(std::string{ vk_layers[i].layerName } == ldr_layers[i].name());
-    REQUIRE(std::string{ vk_layers[i].description } == ldr_layers[i].description());
+    REQUIRE(ldr.available_layers().find(layer_description{ vk_layers[i], tag{ } }) != ldr.available_layers().end());
   }
 }
 
