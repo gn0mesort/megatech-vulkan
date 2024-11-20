@@ -12,25 +12,36 @@
   const auto cmd = *reinterpret_cast<const PFN_##cmd*>((dt).get(megatech::vulkan::dispatch::global::command::cmd)); \
   if (!cmd) \
   { \
-    throw error{ "Failed to resolve the command \"" #cmd "\"." }; \
+    throw megatech::vulkan::error{ "Failed to resolve the command \"" #cmd "\"." }; \
   } \
+  static_assert(true)
+
+#define MEGATECH_VULKAN_INTERNAL_BASE_DECLARE_GLOBAL_PFN_NO_THROW(dt, cmd) \
+  const auto cmd = *reinterpret_cast<const PFN_##cmd*>((dt).get(megatech::vulkan::dispatch::global::command::cmd)); \
   static_assert(true)
 
 #define MEGATECH_VULKAN_INTERNAL_BASE_DECLARE_INSTANCE_PFN(dt, cmd) \
   const auto cmd = *reinterpret_cast<const PFN_##cmd*>((dt).get(megatech::vulkan::dispatch::instance::command::cmd)); \
   if (!cmd) \
   { \
-    throw error{ "Failed to resolve the command \"" #cmd "\"." }; \
+    throw megatech::vulkan::error{ "Failed to resolve the command \"" #cmd "\"." }; \
   } \
   static_assert(true)
 
+#define MEGATECH_VULKAN_INTERNAL_BASE_DECLARE_INSTANCE_PFN_NO_THROW(dt, cmd) \
+  const auto cmd = *reinterpret_cast<const PFN_##cmd*>((dt).get(megatech::vulkan::dispatch::instance::command::cmd)); \
+  static_assert(true)
 
 #define MEGATECH_VULKAN_INTERNAL_BASE_DECLARE_DEVICE_PFN(dt, cmd) \
   const auto cmd = *reinterpret_cast<const PFN_##cmd*>((dt).get(megatech::vulkan::dispatch::device::command::cmd)); \
   if (!cmd) \
   { \
-    throw error{ "Failed to resolve the command \"" #cmd "\"." }; \
+    throw megatech::vulkan::error{ "Failed to resolve the command \"" #cmd "\"." }; \
   } \
+  static_assert(true)
+
+#define MEGATECH_VULKAN_INTERNAL_BASE_DECLARE_DEVICE_PFN_NO_THROW(dt, cmd) \
+  const auto cmd = *reinterpret_cast<const PFN_##cmd*>((dt).get(megatech::vulkan::dispatch::dispatch::command::cmd)); \
   static_assert(true)
 
 #define MEGATECH_VULKAN_INTERNAL_BASE_VK_CHECK(exp) \
@@ -38,7 +49,7 @@
   { \
     if (const auto res = (exp); res != VK_SUCCESS) \
     { \
-      throw error{ "The command \"" #exp "\" failed.", res }; \
+      throw megatech::vulkan::error{ "The command \"" #exp "\" failed.", res }; \
     } \
   } \
   while (0)
