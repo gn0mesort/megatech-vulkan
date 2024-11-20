@@ -33,3 +33,29 @@ namespace megatech::vulkan {
   }
 
 }
+
+namespace std {
+
+  using megatech::vulkan::layer_description;
+
+  std::size_t hash<layer_description>::operator()(const layer_description& layer) const noexcept {
+    return std::hash<std::string>{ }(layer.name());
+  }
+
+  std::size_t hash<layer_description>::operator()(const std::string& name) const noexcept {
+    return std::hash<std::string>{ }(name);
+  }
+
+  bool equal_to<layer_description>::operator()(const layer_description& lhs, const layer_description& rhs) const noexcept {
+    return lhs == rhs;
+  }
+
+  bool equal_to<layer_description>::operator()(const layer_description& lhs, const std::string& rhs) const noexcept {
+    return lhs == rhs;
+  }
+
+  bool equal_to<layer_description>::operator()(const std::string& lhs, const layer_description& rhs) const noexcept {
+    return lhs == rhs;
+  }
+
+}

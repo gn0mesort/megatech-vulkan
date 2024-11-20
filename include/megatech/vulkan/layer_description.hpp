@@ -47,19 +47,30 @@ namespace megatech::vulkan {
 
 }
 
-// It's weird, but one of the few times it's acceptable to open the std namespace is to specialize std::hash.
+// It's weird, but one of the few times it's acceptable to open the std namespace is to specialize template structs.
 namespace std {
 
+  // These templates are provided to enable heterogenous access in std::unordered_set<layer_description>.
+  // In essence, you can search using strings in a set of layer_descriptions. This is because Vulkan uses the layer
+  // name as a unique ID for the layer.
+  //
+  // The "is_transparent" symbol must be defined to enable heterogenous access even with the correct method overloads
+  // declared.
   template <>
-  class hash<megatech::vulkan::layer_description> final {
-  public:
-    std::size_t operator()(const megatech::vulkan::layer_description& layer) const noexcept {
-      return std::hash<std::string>{}(layer.name());
-    }
-    // Weird but required for find() based on a std::string only. This is C++20 feature.
-    std::size_t operator()(const std::string& name) const noexcept {
-      return std::hash<std::string>{}(name);
-    }
+  struct hash<megatech::vulkan::layer_description> final {
+    using is_transparent = void;
+
+    std::size_t operator()(const megatech::vulkan::layer_description& layer) const noexcept;
+    std::size_t operator()(const std::string& name) const noexcept;
+  };
+
+  template <>
+  struct equal_to<megatech::vulkan::layer_description> final {
+    using is_transparent = void;
+
+    bool operator()(const megatech::vulkan::layer_description& lhs, const megatech::vulkan::layer_description& rhs) const noexcept;
+    bool operator()(const megatech::vulkan::layer_description& lhs, const std::string& rhs) const noexcept;
+    bool operator()(const std::string& lhs, const megatech::vulkan::layer_description& rhs) const noexcept;
   };
 
 }
