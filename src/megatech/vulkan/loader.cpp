@@ -33,5 +33,4 @@ namespace megatech::vulkan {
     return m_impl->available_layers();
   }
 
-
 }

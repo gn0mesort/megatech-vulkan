@@ -29,6 +29,7 @@ namespace megatech::vulkan {
 
     std::shared_ptr<implementation_type> m_impl;
   public:
+
     loader() = delete;
     loader(const loader& other) = delete;
     loader(loader&& other) = delete;
