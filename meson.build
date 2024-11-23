@@ -1,7 +1,7 @@
 project(
   'megatech-vulkan',
   [ 'cpp' ],
-  version: '0.0.0-alpha1',
+  version: '0.1.0',
   license: 'AGPL-3.0-or-later',
   default_options: [
     'cpp_std=c++20',
@@ -11,7 +11,10 @@ project(
     'cpp_args=-fstrict-aliasing -Wstrict-aliasing=3'
   ]
 )
-version = meson.project_version().split('-')[0]
+version = meson.project_version()
+version_major = version.split('.')[0]
+version_minor = version.split('.')[1]
+version_patch = version.split('.')[2]
 pymod = import('python')
 python3 = pymod.find_installation('python3')
 has_tools = run_command(python3, '-c',
@@ -35,10 +38,18 @@ dependencies = [
 includes = [
   include_directories('include')
 ]
+config = configuration_data()
+config.set_quoted('CONFIG_VULKAN_ENGINE_NAME', meson.project_name())
+config.set('CONFIG_VULKAN_ENGINE_VERSION_MAJOR', version_major)
+config.set('CONFIG_VULKAN_ENGINE_VERSION_MINOR', version_minor)
+config.set('CONFIG_VULKAN_ENGINE_VERSION_PATCH', version_patch)
 sources = [
   files('src/megatech/vulkan/error.cpp', 'src/megatech/vulkan/version.cpp',
-        'src/megatech/vulkan/layer_description.cpp', 'src/megatech/vulkan/loader.cpp'),
-  files('src/megatech/vulkan/internal/base/loader_impl.cpp'),
+        'src/megatech/vulkan/layer_description.cpp', 'src/megatech/vulkan/loader.cpp',
+        'src/megatech/vulkan/instance.cpp', 'src/megatech/vulkan/physical_devices.cpp'),
+  files('src/megatech/vulkan/internal/base/loader_impl.cpp', 'src/megatech/vulkan/internal/base/instance_impl.cpp',
+        'src/megatech/vulkan/internal/base/physical_device_description_impl.cpp'),
+  configure_file(input: 'generated/include/config.hpp.in', output: '@BASENAME@', configuration: config)
 ]
 megatech_vulkan_lib = library(meson.project_name(), sources, include_directories: includes,
                               dependencies: dependencies, version: version)
@@ -49,8 +60,9 @@ dependencies = [
   megatech_vulkan_dep
 ]
 sources = [
-  files('src/megatech/vulkan/adaptors/libvulkan/loader.cpp'),
-  files('src/megatech/vulkan/adaptors/libvulkan/internal/base/loader_impl.cpp')
+  files('src/megatech/vulkan/adaptors/libvulkan/loader.cpp', 'src/megatech/vulkan/adaptors/libvulkan/instance.cpp'),
+  files('src/megatech/vulkan/adaptors/libvulkan/internal/base/loader_impl.cpp',
+        'src/megatech/vulkan/adaptors/libvulkan/internal/base/instance_impl.cpp')
 ]
 megatech_vulkan_adaptor_libvulkan_lib = library('@0@-adaptor-@1@'.format(meson.project_name(), 'libvulkan'), sources,
                                                 include_directories: includes, dependencies: dependencies,
