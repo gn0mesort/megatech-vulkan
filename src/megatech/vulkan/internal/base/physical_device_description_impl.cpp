@@ -29,6 +29,72 @@ namespace megatech::vulkan::internal::base {
     m_properties_1_2.pNext = nullptr;
     m_properties_1_1.pNext = nullptr;
     m_properties_1_0 = properties2.properties;
+    VK_DECLARE_INSTANCE_PFN(m_parent->dispatch_table(), vkGetPhysicalDeviceQueueFamilyProperties);
+    {
+      auto sz = std::uint32_t{ 0 };
+      vkGetPhysicalDeviceQueueFamilyProperties(m_handle, &sz, nullptr);
+      m_queue_family_properties.resize(sz);
+      vkGetPhysicalDeviceQueueFamilyProperties(m_handle, &sz, m_queue_family_properties.data());
+    }
+    {
+      switch (m_properties_1_0.vendorID)
+      {
+      // Nvidia Devices
+      case 0x10de:
+      // AMD Devices
+      case 0x1002:
+      // Intel Devices
+      case 0x8086:
+      // llvmpipe and Other Mesa Devices
+      case VK_VENDOR_ID_MESA:
+        m_primary_queue_family = !((m_queue_family_properties[0].queueFlags & VK_QUEUE_COMPUTE_BIT) != 0) * -1;
+        for (auto i = std::uint32_t{ 1 }; i < m_queue_family_properties.size(); ++i)
+        {
+          const auto has_compute = m_queue_family_properties[i].queueFlags & VK_QUEUE_COMPUTE_BIT;
+          const auto has_transfer_only = (!(m_queue_family_properties[i].queueFlags &
+                                            (VK_QUEUE_COMPUTE_BIT | VK_QUEUE_GRAPHICS_BIT)) &&
+                                         (m_queue_family_properties[i].queueFlags & VK_QUEUE_TRANSFER_BIT));
+          m_async_compute_queue_family = (m_async_compute_queue_family != -1) *
+                                         (has_compute * i) + (!has_compute * -1);
+          m_async_transfer_queue_family = (m_async_transfer_queue_family != -1) *
+                                          (has_transfer_only * i) + (!has_transfer_only * -1);
+        }
+        break;
+      default:
+        for (auto i = std::uint32_t{ 0 }; i < m_queue_family_properties.size(); ++i)
+        {
+          constexpr auto compute_graphics = VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_COMPUTE_BIT;
+          if ((m_queue_family_properties[i].queueFlags & compute_graphics) == compute_graphics)
+          {
+            if (m_primary_queue_family != -1 &&
+                !(m_queue_family_properties[m_primary_queue_family].queueFlags & VK_QUEUE_GRAPHICS_BIT))
+            {
+              m_primary_queue_family = i;
+            }
+          }
+          else if (m_primary_queue_family == -1 && (m_queue_family_properties[i].queueFlags & VK_QUEUE_COMPUTE_BIT))
+          {
+            m_primary_queue_family = i;
+          }
+        }
+        for (auto i = std::uint32_t{ 0 }; i < m_queue_family_properties.size(); ++i)
+        {
+          if (m_primary_queue_family == i)
+          {
+            continue;
+          }
+          const auto has_compute = m_queue_family_properties[i].queueFlags & VK_QUEUE_COMPUTE_BIT;
+          const auto has_transfer_only = (!(m_queue_family_properties[i].queueFlags &
+                                            (VK_QUEUE_COMPUTE_BIT | VK_QUEUE_GRAPHICS_BIT)) &&
+                                         (m_queue_family_properties[i].queueFlags & VK_QUEUE_TRANSFER_BIT));
+          m_async_compute_queue_family = (m_async_compute_queue_family != -1) *
+                                         (has_compute * i) + (!has_compute * -1);
+          m_async_transfer_queue_family = (m_async_transfer_queue_family != -1) *
+                                          (has_transfer_only * i) + (!has_transfer_only * -1);
+        }
+        break;
+      }
+    }
   }
 
   VkPhysicalDevice physical_device_description_impl::handle() const {
@@ -49,6 +115,46 @@ namespace megatech::vulkan::internal::base {
 
   const VkPhysicalDeviceVulkan13Properties& physical_device_description_impl::properties_1_3() const {
     return m_properties_1_3;
+  }
+
+  const std::vector<VkQueueFamilyProperties>& physical_device_description_impl::queue_family_properties() const {
+    return m_queue_family_properties;
+  }
+
+  int64_t physical_device_description_impl::primary_queue_family_index() const {
+    return m_primary_queue_family;
+  }
+
+  int64_t physical_device_description_impl::async_compute_queue_family_index() const {
+    return m_async_compute_queue_family;
+  }
+
+  int64_t physical_device_description_impl::async_transfer_queue_family_index() const {
+    return m_async_transfer_queue_family;
+  }
+
+  const VkQueueFamilyProperties& physical_device_description_impl::primary_queue_family_properties() const {
+    if (m_primary_queue_family == -1)
+    {
+      // TODO: throw
+    }
+    return m_queue_family_properties[m_primary_queue_family];
+  }
+
+  const VkQueueFamilyProperties& physical_device_description_impl::async_compute_queue_family_properties() const {
+    if (m_async_compute_queue_family == -1)
+    {
+      // TODO: throw
+    }
+    return m_queue_family_properties[m_async_compute_queue_family];
+  }
+
+  const VkQueueFamilyProperties& physical_device_description_impl::async_transfer_queue_family_properties() const {
+    if (m_async_transfer_queue_family == -1)
+    {
+      // TODO: throw
+    }
+    return m_queue_family_properties[m_async_transfer_queue_family];
   }
 
 }

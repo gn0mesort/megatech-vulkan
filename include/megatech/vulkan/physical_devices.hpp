@@ -31,7 +31,16 @@ namespace megatech::vulkan::internal::base {
 
 namespace megatech::vulkan {
 
+namespace async_transfer_support {
+
+  constexpr int none = 0;
+  constexpr int combined = 1;
+  constexpr int dedicated = 2;
+
+}
+
   class instance;
+  class surface;
 
   class physical_device_description final {
   public:
@@ -55,6 +64,11 @@ namespace megatech::vulkan {
     const implementation_type& implementation() const;
     implementation_type& implementation();
     std::shared_ptr<const implementation_type> share_implementation() const;
+
+    bool supports_rendering() const;
+    bool supports_presentation(const surface& srfc) const;
+    bool supports_async_execution() const;
+    int supports_async_transfer() const;
   };
 
   MEGATECH_VULKAN_ENFORCE_CONCEPT(concepts::opaque_object<physical_device_description>);
@@ -63,6 +77,10 @@ namespace megatech::vulkan {
   class physical_device_list final {
   private:
     std::vector<physical_device_description> m_physical_devices;
+
+    physical_device_list(std::vector<physical_device_description>&& filtered_list);
+
+    bool is_valid(const physical_device_description& physical_device) const;
   public:
     using value_type = physical_device_description;
     using size_type = std::vector<physical_device_description>::size_type;

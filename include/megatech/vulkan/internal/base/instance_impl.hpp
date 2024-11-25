@@ -11,6 +11,12 @@
 
 #include "../../instance.hpp"
 
+namespace megatech::vulkan {
+
+  class physical_device_description;
+
+}
+
 namespace megatech::vulkan::internal::base {
 
   class loader_impl;
@@ -30,6 +36,8 @@ namespace megatech::vulkan::internal::base {
 
     instance_impl& operator=(const instance_impl& rhs) = delete;
     instance_impl& operator=(instance_impl&& rhs) = delete;
+
+    virtual bool is_valid(const physical_device_description& physical_device) const;
 
     const dispatch::instance::table& dispatch_table() const;
     VkInstance handle() const;

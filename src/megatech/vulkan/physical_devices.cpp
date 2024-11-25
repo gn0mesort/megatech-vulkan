@@ -46,6 +46,37 @@ namespace megatech::vulkan {
     return m_impl;
   }
 
+  bool physical_device_description::supports_rendering() const {
+    return m_impl->primary_queue_family_properties().queueFlags & VK_QUEUE_GRAPHICS_BIT;
+  }
+
+  bool physical_device_description::supports_presentation(const surface&) const {
+    return supports_rendering() /* && TODO: check surface support */;
+  }
+
+  bool physical_device_description::supports_async_execution() const {
+    return m_impl->async_transfer_queue_family_index() != -1;
+  }
+
+  int physical_device_description::supports_async_transfer() const {
+    if (m_impl->async_transfer_queue_family_index() != -1)
+    {
+      return async_transfer_support::dedicated;
+    }
+    if (m_impl->async_compute_queue_family_index() != -1)
+    {
+      return async_transfer_support::combined;
+    }
+    return async_transfer_support::none;
+  }
+
+  physical_device_list::physical_device_list(std::vector<physical_device_description>&& filtered_list) :
+  m_physical_devices{ std::move(filtered_list) } { }
+
+  bool physical_device_list::is_valid(const physical_device_description& physical_device) const {
+    return physical_device.implementation().primary_queue_family_index() != -1;
+  }
+
   physical_device_list::physical_device_list(const instance& inst) {
     auto parent = inst.share_implementation();
     VK_DECLARE_INSTANCE_PFN(parent->dispatch_table(), vkEnumeratePhysicalDevices);
@@ -56,7 +87,11 @@ namespace megatech::vulkan {
     m_physical_devices.reserve(sz);
     for (auto&& handle : handles)
     {
-      m_physical_devices.emplace_back(parent, handle, internal::tag{ });
+      auto tmp = physical_device_description{ parent, handle, internal::tag{ } };
+      if (is_valid(tmp) && parent->is_valid(tmp))
+      {
+        m_physical_devices.emplace_back(tmp);
+      }
     }
     m_physical_devices.shrink_to_fit();
   }

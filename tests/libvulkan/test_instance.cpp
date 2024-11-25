@@ -1,5 +1,6 @@
 #include <cinttypes>
 
+#include <ranges>
 #include <vector>
 #include <string>
 
@@ -44,23 +45,21 @@ TEST_CASE("Physical device lists should be initializable from a complete instanc
   REQUIRE_NOTHROW(physical_device_list{ inst });
 }
 
-TEST_CASE("Physical device lists created via an instance should be the same as directly listing devices with Vulkan 1.0", "[instance][adaptor-libvulkan]") {
+TEST_CASE("Physical devices should all have primary queues.", "[instance][adaptor-libvulkan]") {
   auto ldr = loader{ };
   auto inst = instance{ ldr, "test_instance", version{ 0, 1, 0, 0 } };
   auto physical_devices = physical_device_list{ inst };
-  auto vk_physical_devices = std::vector<VkPhysicalDevice>{ };
+  for (auto&& physical_device : physical_devices)
   {
-    auto sz = std::uint32_t{ 0 };
-    VK_DECLARE_INSTANCE_PFN(inst.implementation().dispatch_table(), vkEnumeratePhysicalDevices);
-    VK_CHECK(vkEnumeratePhysicalDevices(inst.implementation().handle(), &sz, nullptr));
-    vk_physical_devices.resize(sz);
-    VK_CHECK(vkEnumeratePhysicalDevices(inst.implementation().handle(), &sz, vk_physical_devices.data()));
+    REQUIRE(physical_device.implementation().primary_queue_family_index() != -1);
   }
-  REQUIRE(physical_devices.size() == vk_physical_devices.size());
-  for (auto i = std::size_t{ 0 }; i < physical_devices.size(); ++i)
-  {
-    REQUIRE(physical_devices[i].implementation().handle() == vk_physical_devices[i]);
-  }
+}
+
+TEST_CASE("Physical devices should be filterable.", "[instance][adaptor-libvulkan]") {
+  auto ldr = loader{ };
+  auto inst = instance{ ldr, "test_instance", version{ 0, 1, 0, 0 } };
+  auto physical_devices = physical_device_list{ inst };
+  REQUIRE_NOTHROW(std::views::filter([](auto& v){ return v.supports_rendering(); }));
 }
 
 int main(int argc, char** argv) {

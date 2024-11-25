@@ -15,6 +15,11 @@ namespace megatech::vulkan::internal::base {
     VkPhysicalDeviceVulkan11Properties m_properties_1_1{ };
     VkPhysicalDeviceVulkan12Properties m_properties_1_2{ };
     VkPhysicalDeviceVulkan13Properties m_properties_1_3{ };
+    std::vector<VkQueueFamilyProperties> m_queue_family_properties{ };
+
+    int64_t m_primary_queue_family{ -1 };
+    int64_t m_async_compute_queue_family{ -1 };
+    int64_t m_async_transfer_queue_family{ -1 };
   public:
     physical_device_description_impl() = delete;
     physical_device_description_impl(std::shared_ptr<const instance_impl> parent, VkPhysicalDevice handle);
@@ -31,6 +36,13 @@ namespace megatech::vulkan::internal::base {
     const VkPhysicalDeviceVulkan11Properties& properties_1_1() const;
     const VkPhysicalDeviceVulkan12Properties& properties_1_2() const;
     const VkPhysicalDeviceVulkan13Properties& properties_1_3() const;
+    const std::vector<VkQueueFamilyProperties>& queue_family_properties() const;
+    int64_t primary_queue_family_index() const;
+    int64_t async_compute_queue_family_index() const;
+    int64_t async_transfer_queue_family_index() const;
+    const VkQueueFamilyProperties& primary_queue_family_properties() const;
+    const VkQueueFamilyProperties& async_compute_queue_family_properties() const;
+    const VkQueueFamilyProperties& async_transfer_queue_family_properties() const;
   };
 
 }
