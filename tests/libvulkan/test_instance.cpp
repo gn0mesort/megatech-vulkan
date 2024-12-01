@@ -31,6 +31,7 @@ using megatech::vulkan::version;
 
 using megatech::vulkan::adaptors::libvulkan::loader;
 using megatech::vulkan::adaptors::libvulkan::instance;
+using megatech::vulkan::adaptors::libvulkan::debug_instance;
 using megatech::vulkan::physical_device_list;
 
 TEST_CASE("Instances should be initializable.", "[instance][adaptor-libvulkan]") {
@@ -60,6 +61,37 @@ TEST_CASE("Physical devices should be filterable.", "[instance][adaptor-libvulka
   auto inst = instance{ ldr, "test_instance", version{ 0, 1, 0, 0 } };
   auto physical_devices = physical_device_list{ inst };
   REQUIRE_NOTHROW(std::views::filter([](auto& v){ return v.supports_rendering(); }));
+}
+
+TEST_CASE("Debug instances should be initializable.", "[instance][adaptor-libvulkan]") {
+  auto ldr = loader{ };
+  REQUIRE_NOTHROW(debug_instance{ ldr, "test_instance", version{ 0, 1, 0, 0 } });
+  REQUIRE_NOTHROW(debug_instance{ ldr, "test_instance", version{ 0, 1, 0, 0 }, { "VK_LAYER_KHRONOS_validation" } });
+}
+
+TEST_CASE("Debug instances should act as if they are regular instances.", "[instance][adaptor-libvulkan]") {
+  auto ldr = loader{ };
+  auto inst = debug_instance{ ldr, "test_instance", version{ 0, 1, 0, 0 } };
+  auto physical_devices = physical_device_list{ inst };
+  REQUIRE_NOTHROW(std::views::filter([](auto& v){ return v.supports_rendering(); }));
+}
+
+TEST_CASE("Instance ownership chains should ensure parent object lifetimes.", "[instance][adaptor-libvulkan]") {
+  auto* physical_devices = static_cast<physical_device_list*>(nullptr);
+  auto loader_ptr = std::weak_ptr<const megatech::vulkan::internal::base::loader_impl>{ };
+  auto instance_ptr = std::weak_ptr<const megatech::vulkan::internal::base::instance_impl>{ };
+  {
+    auto ldr = loader{ };
+    loader_ptr = ldr.share_implementation();
+    auto inst = instance{ ldr, "test_instance", version{ 0, 1, 0, 0 } };
+    instance_ptr = inst.share_implementation();
+    physical_devices = new physical_device_list{ inst };
+  }
+  REQUIRE(loader_ptr.use_count() > 0);
+  REQUIRE(instance_ptr.use_count() > 0);
+  delete physical_devices;
+  REQUIRE(loader_ptr.use_count() == 0);
+  REQUIRE(instance_ptr.use_count() == 0);
 }
 
 int main(int argc, char** argv) {

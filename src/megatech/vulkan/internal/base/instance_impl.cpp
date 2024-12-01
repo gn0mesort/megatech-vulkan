@@ -17,4 +17,12 @@ namespace megatech::vulkan::internal::base {
     return m_instance;
   }
 
+  const std::unordered_set<std::string>& instance_impl::enabled_layers() const {
+    return m_enabled_layers;
+  }
+
+  const std::unordered_set<std::string>& instance_impl::enabled_extensions() const {
+    return m_enabled_extensions;
+  }
+
 }
