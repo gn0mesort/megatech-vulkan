@@ -13,8 +13,12 @@ namespace megatech::vulkan::internal::base {
     return *m_idt;
   }
 
-  VkInstance instance_impl::handle() const {
+  instance_impl::handle_type instance_impl::handle() const {
     return m_instance;
+  }
+
+  const instance_impl::parent_type& instance_impl::parent() const {
+    return *m_parent;
   }
 
   const std::unordered_set<std::string>& instance_impl::enabled_layers() const {

@@ -10,7 +10,11 @@
 
 #include <megatech/vulkan/dispatch/tables.hpp>
 
+#include "../../defs.hpp"
 #include "../../instance.hpp"
+
+#include "../../concepts/child_object.hpp"
+#include "../../concepts/handle_owner.hpp"
 
 namespace megatech::vulkan {
 
@@ -32,6 +36,9 @@ namespace megatech::vulkan::internal::base {
     std::unordered_set<std::string> m_enabled_layers{ };
     std::unordered_set<std::string> m_enabled_extensions{ };
   public:
+    using handle_type = VkInstance;
+    using parent_type = loader_impl;
+
     instance_impl(const instance_impl& other) = delete;
     instance_impl(instance_impl&& other) = delete;
 
@@ -43,11 +50,16 @@ namespace megatech::vulkan::internal::base {
     virtual bool is_valid(const physical_device_description& physical_device) const;
 
     const dispatch::instance::table& dispatch_table() const;
-    VkInstance handle() const;
+    handle_type handle() const;
+
+    const parent_type& parent() const;
 
     const std::unordered_set<std::string>& enabled_layers() const;
     const std::unordered_set<std::string>& enabled_extensions() const;
   };
+
+  MEGATECH_VULKAN_ENFORCE_CONCEPT(megatech::vulkan::concepts::readonly_child_object<instance_impl>);
+  MEGATECH_VULKAN_ENFORCE_CONCEPT(megatech::vulkan::concepts::handle_owner<instance_impl>);
 
 }
 

@@ -97,8 +97,12 @@ namespace megatech::vulkan::internal::base {
     }
   }
 
-  VkPhysicalDevice physical_device_description_impl::handle() const {
+  physical_device_description_impl::handle_type physical_device_description_impl::handle() const {
     return m_handle;
+  }
+
+  const physical_device_description_impl::parent_type& physical_device_description_impl::parent() const {
+    return *m_parent;
   }
 
   const VkPhysicalDeviceProperties& physical_device_description_impl::properties_1_0() const {

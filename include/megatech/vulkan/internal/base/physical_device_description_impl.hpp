@@ -3,6 +3,11 @@
 
 #include "../../physical_devices.hpp"
 
+#include "../../defs.hpp"
+
+#include "../../concepts/child_object.hpp"
+#include "../../concepts/handle_owner.hpp"
+
 namespace megatech::vulkan::internal::base {
 
   class instance_impl;
@@ -21,6 +26,9 @@ namespace megatech::vulkan::internal::base {
     int64_t m_async_compute_queue_family{ -1 };
     int64_t m_async_transfer_queue_family{ -1 };
   public:
+    using handle_type = VkPhysicalDevice;
+    using parent_type = instance_impl;
+
     physical_device_description_impl() = delete;
     physical_device_description_impl(std::shared_ptr<const instance_impl> parent, VkPhysicalDevice handle);
     physical_device_description_impl(const physical_device_description_impl& other) = delete;
@@ -31,7 +39,8 @@ namespace megatech::vulkan::internal::base {
     physical_device_description_impl& operator=(const physical_device_description_impl& rhs) = delete;
     physical_device_description_impl& operator=(physical_device_description_impl&& rhs) = delete;
 
-    VkPhysicalDevice handle() const;
+    handle_type handle() const;
+    const parent_type& parent() const;
     const VkPhysicalDeviceProperties& properties_1_0() const;
     const VkPhysicalDeviceVulkan11Properties& properties_1_1() const;
     const VkPhysicalDeviceVulkan12Properties& properties_1_2() const;
@@ -44,6 +53,9 @@ namespace megatech::vulkan::internal::base {
     const VkQueueFamilyProperties& async_compute_queue_family_properties() const;
     const VkQueueFamilyProperties& async_transfer_queue_family_properties() const;
   };
+
+  MEGATECH_VULKAN_ENFORCE_CONCEPT(concepts::readonly_child_object<physical_device_description_impl>);
+  MEGATECH_VULKAN_ENFORCE_CONCEPT(concepts::handle_owner<physical_device_description_impl>);
 
 }
 
