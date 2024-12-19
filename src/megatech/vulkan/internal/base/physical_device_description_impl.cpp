@@ -29,6 +29,41 @@ namespace megatech::vulkan::internal::base {
     m_properties_1_2.pNext = nullptr;
     m_properties_1_1.pNext = nullptr;
     m_properties_1_0 = properties2.properties;
+    auto features2 = VkPhysicalDeviceFeatures2{ };
+    features2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
+    features2.pNext = &m_features_1_1;
+    m_features_1_1.pNext = &m_features_1_2;
+    m_features_1_1.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_FEATURES;
+    m_features_1_2.pNext = &m_features_1_3;
+    m_features_1_2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES;
+    m_features_1_3.pNext = nullptr;
+    m_features_1_3.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES;
+    VK_DECLARE_INSTANCE_PFN(m_parent->dispatch_table(), vkGetPhysicalDeviceFeatures2);
+    vkGetPhysicalDeviceFeatures2(m_handle, &features2);
+    m_features_1_2.pNext = nullptr;
+    m_features_1_1.pNext = nullptr;
+    m_features_1_0 = features2.features;
+    VK_DECLARE_INSTANCE_PFN(m_parent->dispatch_table(), vkEnumerateDeviceExtensionProperties);
+    {
+      auto sz = std::uint32_t{ 0 };
+      VK_CHECK(vkEnumerateDeviceExtensionProperties(m_handle, nullptr, &sz, nullptr));
+      auto properties = std::vector<VkExtensionProperties>(sz);
+      VK_CHECK(vkEnumerateDeviceExtensionProperties(m_handle, nullptr, &sz, properties.data()));
+      for (const auto& property : properties)
+      {
+        m_available_extensions.insert(property.extensionName);
+      }
+      for (const auto& layer : m_parent->enabled_layers())
+      {
+        VK_CHECK(vkEnumerateDeviceExtensionProperties(m_handle, layer.data(), &sz, nullptr));
+        properties.resize(sz);
+        VK_CHECK(vkEnumerateDeviceExtensionProperties(m_handle, layer.data(), &sz, properties.data()));
+        for (const auto& property : properties)
+        {
+          m_available_extensions.insert(property.extensionName);
+        }
+      }
+    }
     VK_DECLARE_INSTANCE_PFN(m_parent->dispatch_table(), vkGetPhysicalDeviceQueueFamilyProperties);
     {
       auto sz = std::uint32_t{ 0 };
@@ -119,6 +154,26 @@ namespace megatech::vulkan::internal::base {
 
   const VkPhysicalDeviceVulkan13Properties& physical_device_description_impl::properties_1_3() const {
     return m_properties_1_3;
+  }
+
+  const VkPhysicalDeviceFeatures& physical_device_description_impl::features_1_0() const {
+    return m_features_1_0;
+  }
+
+  const VkPhysicalDeviceVulkan11Features& physical_device_description_impl::features_1_1() const {
+    return m_features_1_1;
+  }
+
+  const VkPhysicalDeviceVulkan12Features& physical_device_description_impl::features_1_2() const {
+    return m_features_1_2;
+  }
+
+  const VkPhysicalDeviceVulkan13Features& physical_device_description_impl::features_1_3() const {
+    return m_features_1_3;
+  }
+
+  const std::unordered_set<std::string>& physical_device_description_impl::available_extensions() const {
+    return m_available_extensions;
   }
 
   const std::vector<VkQueueFamilyProperties>& physical_device_description_impl::queue_family_properties() const {

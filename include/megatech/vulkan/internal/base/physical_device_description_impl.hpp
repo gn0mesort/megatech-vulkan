@@ -1,6 +1,8 @@
 #ifndef MEGATECH_VULKAN_INTERNAL_BASE_PHYSICAL_DEVICE_DESCRIPTION_IMPL_HPP
 #define MEGATECH_VULKAN_INTERNAL_BASE_PHYSICAL_DEVICE_DESCRIPTION_IMPL_HPP
 
+#include <unordered_set>
+
 #include "../../physical_devices.hpp"
 
 #include "../../defs.hpp"
@@ -20,7 +22,12 @@ namespace megatech::vulkan::internal::base {
     VkPhysicalDeviceVulkan11Properties m_properties_1_1{ };
     VkPhysicalDeviceVulkan12Properties m_properties_1_2{ };
     VkPhysicalDeviceVulkan13Properties m_properties_1_3{ };
+    VkPhysicalDeviceFeatures m_features_1_0{ };
+    VkPhysicalDeviceVulkan11Features m_features_1_1{ };
+    VkPhysicalDeviceVulkan12Features m_features_1_2{ };
+    VkPhysicalDeviceVulkan13Features m_features_1_3{ };
     std::vector<VkQueueFamilyProperties> m_queue_family_properties{ };
+    std::unordered_set<std::string> m_available_extensions{ };
 
     int64_t m_primary_queue_family{ -1 };
     int64_t m_async_compute_queue_family{ -1 };
@@ -45,6 +52,11 @@ namespace megatech::vulkan::internal::base {
     const VkPhysicalDeviceVulkan11Properties& properties_1_1() const;
     const VkPhysicalDeviceVulkan12Properties& properties_1_2() const;
     const VkPhysicalDeviceVulkan13Properties& properties_1_3() const;
+    const VkPhysicalDeviceFeatures& features_1_0() const;
+    const VkPhysicalDeviceVulkan11Features& features_1_1() const;
+    const VkPhysicalDeviceVulkan12Features& features_1_2() const;
+    const VkPhysicalDeviceVulkan13Features& features_1_3() const;
+    const std::unordered_set<std::string>& available_extensions() const;
     const std::vector<VkQueueFamilyProperties>& queue_family_properties() const;
     int64_t primary_queue_family_index() const;
     int64_t async_compute_queue_family_index() const;

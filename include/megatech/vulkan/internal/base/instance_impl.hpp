@@ -2,7 +2,6 @@
 #define MEGATECH_VULKAN_INTERNAL_BASE_INSTANCE_IMPL_HPP
 
 #include <memory>
-#include <vector>
 #include <unordered_set>
 
 #define VK_NO_PROTOTYPES (1)
