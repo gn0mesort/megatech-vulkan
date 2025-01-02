@@ -25,11 +25,10 @@ namespace megatech::vulkan {
   public:
     using implementation_type = internal::base::loader_impl;
   protected:
-    loader(implementation_type*&& impl);
+    explicit loader(implementation_type*&& impl);
 
     std::shared_ptr<implementation_type> m_impl;
   public:
-
     loader() = delete;
     loader(const loader& other) = delete;
     loader(loader&& other) = delete;
@@ -46,8 +45,9 @@ namespace megatech::vulkan {
     std::shared_ptr<const implementation_type> share_implementation() const;
   };
 
-  MEGATECH_VULKAN_ENFORCE_CONCEPT(concepts::opaque_object<loader>);
-  MEGATECH_VULKAN_ENFORCE_CONCEPT(concepts::readonly_sharable_opaque_object<loader>);
+
+  static_assert(concepts::opaque_object<loader>);
+  static_assert(concepts::readonly_sharable_opaque_object<loader>);
 
 }
 

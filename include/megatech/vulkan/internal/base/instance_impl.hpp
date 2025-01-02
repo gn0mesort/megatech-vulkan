@@ -57,8 +57,8 @@ namespace megatech::vulkan::internal::base {
     const std::unordered_set<std::string>& enabled_extensions() const;
   };
 
-  MEGATECH_VULKAN_ENFORCE_CONCEPT(megatech::vulkan::concepts::readonly_child_object<instance_impl>);
-  MEGATECH_VULKAN_ENFORCE_CONCEPT(megatech::vulkan::concepts::handle_owner<instance_impl>);
+  static_assert(megatech::vulkan::concepts::readonly_child_object<instance_impl>);
+  static_assert(megatech::vulkan::concepts::handle_owner<instance_impl>);
 
 }
 

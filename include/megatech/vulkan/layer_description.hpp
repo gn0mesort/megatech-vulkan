@@ -5,30 +5,26 @@
 
 #include <string>
 
-#if defined(MEGATECH_VULKAN_INCLUDE_VULKAN_H) && __has_include(<vulkan/vulkan.h>)
-  #include <vulkan/vulkan.h>
-#endif
-
 #include "version.hpp"
 
-namespace megatech::vulkan::internal {
+namespace megatech::vulkan::internal::base {
 
-  struct tag;
+  struct layer_description_proxy;
 
 }
 
 namespace megatech::vulkan {
 
   class layer_description final {
+  public:
+    using proxy_type = internal::base::layer_description_proxy;
   private:
     version m_specification_version{ 0, 1, 0, 0 };
     std::uint32_t m_implementation_version{ 1 };
     std::string m_name{ };
     std::string m_description{ };
   public:
-#ifdef VK_VERSION_1_0
-    layer_description(const VkLayerProperties& properties, const internal::tag&);
-#endif
+    explicit layer_description(const proxy_type& proxy);
     layer_description(const layer_description& other) = default;
     layer_description(layer_description&& other) = default;
 

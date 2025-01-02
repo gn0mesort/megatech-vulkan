@@ -13,13 +13,12 @@
 #include <megatech/vulkan/loader.hpp>
 #include <megatech/vulkan/layer_description.hpp>
 
-#include <megatech/vulkan/internal/tag.hpp>
-
+#include <megatech/vulkan/internal/base/layer_description_proxy.hpp>
 #include <megatech/vulkan/internal/base/loader_impl.hpp>
 
 #include <megatech/vulkan/adaptors/libvulkan.hpp>
 
-#define VK_DECLARE_GLOBAL_PFN(dt, cmd) \
+#define DECLARE_GLOBAL_PFN(dt, cmd) \
   const auto cmd = *reinterpret_cast<const PFN_##cmd*>((dt).get(megatech::vulkan::dispatch::global::command::cmd)); \
   do \
   { \
@@ -46,29 +45,6 @@ TEST_CASE("Loaders should be default initializable.", "[loader][adaptor-libvulka
   REQUIRE_NOTHROW(loader{ });
 }
 
-TEST_CASE("Loaders should be explicitly copy initializable.", "[loader][adaptor-libvulkan]") {
-  auto ldr = loader{ };
-  REQUIRE_NOTHROW(loader{ ldr });
-}
-
-TEST_CASE("Loaders should be copy assignable.", "[loader][adaptor-libvulkan]") {
-  auto ldr = loader{ };
-  auto cpy = loader{ };
-  REQUIRE_NOTHROW(cpy = ldr);
-  REQUIRE(&cpy.implementation() != &ldr.implementation());
-  {
-    auto ldrc = ldr.available_layers().begin();
-    auto cpyc = cpy.available_layers().begin();
-    for (; ldrc != ldr.available_layers().end() && cpyc != cpy.available_layers().end(); ++ldrc, ++cpyc)
-    {
-      REQUIRE(ldrc->name() == cpyc->name());
-      REQUIRE(ldrc->description() == cpyc->description());
-      REQUIRE(ldrc->specification_version() == cpyc->specification_version());
-      REQUIRE(ldrc->implementation_version() == ldrc->implementation_version());
-    }
-  }
-}
-
 TEST_CASE("Loaders should have a shareable implementation pointer.", "[loader][adaptor-libvulkan]") {
   const auto ldr = loader{ };
   REQUIRE(ldr.share_implementation() != nullptr);
@@ -76,13 +52,11 @@ TEST_CASE("Loaders should have a shareable implementation pointer.", "[loader][a
 
 TEST_CASE("Loaders should be able to retrieve a list of Vulkan layers for the client.", "[loader][adaptor-libvulkan]") {
   using megatech::vulkan::version;
-  using megatech::vulkan::layer_description;
-  using megatech::vulkan::internal::tag;
   const auto ldr = loader{ };
   auto vk_layers = std::vector<VkLayerProperties>{ };
   {
     auto sz = std::uint32_t{ };
-    VK_DECLARE_GLOBAL_PFN(ldr.implementation().dispatch_table(), vkEnumerateInstanceLayerProperties);
+    DECLARE_GLOBAL_PFN(ldr.implementation().dispatch_table(), vkEnumerateInstanceLayerProperties);
     VK_CHECK(vkEnumerateInstanceLayerProperties(&sz, nullptr));
     vk_layers.resize(sz);
     VK_CHECK(vkEnumerateInstanceLayerProperties(&sz, vk_layers.data()));
@@ -90,7 +64,7 @@ TEST_CASE("Loaders should be able to retrieve a list of Vulkan layers for the cl
   REQUIRE(vk_layers.size() == ldr.available_layers().size());
   for (auto i = std::uint32_t{ 0 }; i < vk_layers.size(); ++i)
   {
-    REQUIRE(ldr.available_layers().find(layer_description{ vk_layers[i], tag{ } }) != ldr.available_layers().end());
+    REQUIRE(ldr.available_layers().contains(vk_layers[i].layerName));
   }
 }
 

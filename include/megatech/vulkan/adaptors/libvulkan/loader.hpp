@@ -8,12 +8,12 @@ namespace megatech::vulkan::adaptors::libvulkan {
   class loader final : public megatech::vulkan::loader {
   public:
     loader();
-    explicit loader(const loader& other);
+    loader(const loader& other) = delete;
     loader(loader&& other) = delete;
 
     ~loader() noexcept = default;
 
-    loader& operator=(const loader& rhs);
+    loader& operator=(const loader& rhs) = delete;
     loader& operator=(loader&& rhs) = delete;
   };
 

@@ -43,8 +43,8 @@ namespace megatech::vulkan {
     std::shared_ptr<const implementation_type> share_implementation() const;
   };
 
-  MEGATECH_VULKAN_ENFORCE_CONCEPT(concepts::opaque_object<instance>);
-  MEGATECH_VULKAN_ENFORCE_CONCEPT(concepts::readonly_sharable_opaque_object<instance>);
+  static_assert(concepts::opaque_object<instance>);
+  static_assert(concepts::readonly_sharable_opaque_object<instance>);
 
 }
 

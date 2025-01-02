@@ -10,6 +10,21 @@
 
 namespace megatech::vulkan::internal::base {
 
+  class loader_function_builder {
+  protected:
+    loader_function_builder() = default;
+  public:
+    loader_function_builder(const loader_function_builder& other) = default;
+    loader_function_builder(loader_function_builder&& other) = default;
+
+    virtual ~loader_function_builder() noexcept = default;
+
+    loader_function_builder& operator=(const loader_function_builder& rhs) = default;
+    loader_function_builder& operator=(loader_function_builder&& rhs) = default;
+
+    virtual PFN_vkGetInstanceProcAddr build() const = 0;
+  };
+
   class loader_impl {
   protected:
     loader_impl() = default;
@@ -17,6 +32,7 @@ namespace megatech::vulkan::internal::base {
     std::unique_ptr<dispatch::global::table> m_gdt{ };
     std::unordered_set<layer_description> m_available_layers{ };
   public:
+    explicit loader_impl(const loader_function_builder& builder);
     loader_impl(const loader_impl& other) = delete;
     loader_impl(loader_impl&& other) = delete;
 

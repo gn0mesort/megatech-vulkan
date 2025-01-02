@@ -3,24 +3,14 @@
 
 #include <utility>
 
-#include "megatech/vulkan/adaptors/libvulkan/internal/base/loader_impl.hpp"
+#include "megatech/vulkan/internal/base/instance_impl.hpp"
+#include "megatech/vulkan/adaptors/libvulkan/internal/base/loader_function_builder.hpp"
 
 namespace megatech::vulkan::adaptors::libvulkan {
 
-  loader::loader() : megatech::vulkan::loader{ new internal::base::loader_impl{ } } { }
-
-  loader::loader(const loader& other) :
+  loader::loader() :
   megatech::vulkan::loader{
-    new internal::base::loader_impl{ static_cast<internal::base::loader_impl&>(*other.m_impl) }
+    new megatech::vulkan::internal::base::loader_impl{ internal::base::loader_function_builder{ } }
   } { }
-
-  loader& loader::operator=(const loader& rhs) {
-    if (this != &rhs)
-    {
-      auto cpy = loader{ rhs };
-      std::swap(m_impl, cpy.m_impl);
-    }
-    return *this;
-  }
 
 }
