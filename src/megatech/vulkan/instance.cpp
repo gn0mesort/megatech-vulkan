@@ -4,18 +4,10 @@
 
 #include "megatech/vulkan/internal/base/instance_impl.hpp"
 
-namespace megatech::vulkan::internal::base {
-
-  void instance_impl_dtor::operator()(instance_impl* p) const noexcept {
-    delete p;
-  }
-
-}
-
 namespace megatech::vulkan {
 
-  instance::instance(internal::base::instance_impl*&& impl) :
-  m_impl{ std::exchange(impl, nullptr), internal::base::instance_impl_dtor{ } } { }
+  instance::instance(const std::shared_ptr<implementation_type>& impl) :
+  m_impl{ impl } { }
 
   const instance::implementation_type& instance::implementation() const {
     return *m_impl;
@@ -27,6 +19,13 @@ namespace megatech::vulkan {
 
   std::shared_ptr<const instance::implementation_type> instance::share_implementation() const {
     return m_impl;
+  }
+
+  debug_instance::debug_instance(const std::shared_ptr<extended_implementation_type>& impl) : instance{ impl } { }
+
+  void debug_instance::submit_debug_message(const bitmask types, const bitmask severity,
+                                            const std::string& message) const {
+    static_cast<const extended_implementation_type&>(implementation()).submit_debug_message(types, severity, message);
   }
 
 }

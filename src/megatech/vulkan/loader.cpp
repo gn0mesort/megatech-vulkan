@@ -4,18 +4,10 @@
 
 #include "megatech/vulkan/internal/base/loader_impl.hpp"
 
-namespace megatech::vulkan::internal::base {
-
-  void loader_impl_dtor::operator()(loader_impl* p) const noexcept {
-    delete p;
-  }
-
-}
-
 namespace megatech::vulkan {
 
-  loader::loader(internal::base::loader_impl*&& impl) :
-  m_impl{ std::exchange(impl, nullptr), internal::base::loader_impl_dtor{ } } { }
+  loader::loader(const std::shared_ptr<implementation_type>& impl) :
+  m_impl{ impl } { }
 
   const loader::implementation_type& loader::implementation() const {
     return *m_impl;

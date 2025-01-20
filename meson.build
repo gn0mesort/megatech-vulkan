@@ -1,6 +1,7 @@
 project(
   'megatech-vulkan',
   [ 'cpp' ],
+  meson_version: '>=1.4.0',
   version: '0.1.0',
   license: 'AGPL-3.0-or-later',
   default_options: [
@@ -45,11 +46,13 @@ config.set('CONFIG_VULKAN_ENGINE_VERSION_MINOR', version_minor)
 config.set('CONFIG_VULKAN_ENGINE_VERSION_PATCH', version_patch)
 sources = [
   files('src/megatech/vulkan/error.cpp', 'src/megatech/vulkan/version.cpp',
-        'src/megatech/vulkan/layer_description.cpp', 'src/megatech/vulkan/loader.cpp'),
-        #'src/megatech/vulkan/instance.cpp', 'src/megatech/vulkan/physical_devices.cpp'),
-  files('src/megatech/vulkan/internal/base/loader_impl.cpp'),
-        #'src/megatech/vulkan/internal/base/instance_impl.cpp',
-        #'src/megatech/vulkan/internal/base/physical_device_description_impl.cpp'),
+        'src/megatech/vulkan/application_description.cpp', 'src/megatech/vulkan/debug_messenger_description.cpp',
+        'src/megatech/vulkan/layer_description.cpp', 'src/megatech/vulkan/loader.cpp',
+        'src/megatech/vulkan/instance.cpp', 'src/megatech/vulkan/physical_devices.cpp'),
+  files('src/megatech/vulkan/internal/base/loader_impl.cpp',
+        'src/megatech/vulkan/internal/base/instance_impl.cpp',
+        'src/megatech/vulkan/internal/base/physical_device_description_impl.cpp',
+        'src/megatech/vulkan/internal/base/physical_device_validator.cpp'),
   configure_file(input: 'generated/include/config.hpp.in', output: '@BASENAME@', configuration: config)
 ]
 megatech_vulkan_lib = library(meson.project_name(), sources, include_directories: includes,
@@ -61,8 +64,7 @@ dependencies = [
   megatech_vulkan_dep
 ]
 sources = [
-  files('src/megatech/vulkan/adaptors/libvulkan/loader.cpp'), #'src/megatech/vulkan/adaptors/libvulkan/instance.cpp'),
-  files('src/megatech/vulkan/adaptors/libvulkan/internal/base/loader_function_builder.cpp')
+  files('src/megatech/vulkan/adaptors/libvulkan/loader.cpp', 'src/megatech/vulkan/adaptors/libvulkan/instance.cpp')
         #'src/megatech/vulkan/adaptors/libvulkan/internal/base/instance_impl.cpp')
 ]
 megatech_vulkan_adaptor_libvulkan_lib = library('@0@-adaptor-@1@'.format(meson.project_name(), 'libvulkan'), sources,

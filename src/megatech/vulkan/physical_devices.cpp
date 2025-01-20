@@ -4,32 +4,23 @@
 
 #include <cinttypes>
 
+#include <utility>
+
 #include "megatech/vulkan/instance.hpp"
 #include "megatech/vulkan/version.hpp"
 
-#include "megatech/vulkan/internal/tag.hpp"
-
 #include "megatech/vulkan/internal/base/vulkandefs.hpp"
+#include "megatech/vulkan/internal/base/physical_device_validator.hpp"
 #include "megatech/vulkan/internal/base/instance_impl.hpp"
 #include "megatech/vulkan/internal/base/physical_device_description_impl.hpp"
 
-#define VK_DECLARE_INSTANCE_PFN(dt, cmd) MEGATECH_VULKAN_INTERNAL_BASE_DECLARE_INSTANCE_PFN(dt, cmd)
+#define DECLARE_INSTANCE_PFN(dt, cmd) MEGATECH_VULKAN_INTERNAL_BASE_DECLARE_INSTANCE_PFN(dt, cmd)
 #define VK_CHECK(exp) MEGATECH_VULKAN_INTERNAL_BASE_VK_CHECK(exp)
-
-namespace megatech::vulkan::internal::base {
-
-  void physical_device_description_impl_dtor::operator()(physical_device_description_impl* p) const noexcept {
-    delete p;
-  }
-
-}
 
 namespace megatech::vulkan {
 
-  physical_device_description::physical_device_description(std::shared_ptr<const internal::base::instance_impl> parent,
-                                                           VkPhysicalDevice handle, const internal::tag&) :
-  m_impl{ new internal::base::physical_device_description_impl{ parent, handle },
-          internal::base::physical_device_description_impl_dtor{ } } { }
+  physical_device_description::physical_device_description(const std::shared_ptr<implementation_type>& impl) :
+  m_impl{ impl } { }
 
   bool physical_device_description::operator==(const physical_device_description& rhs) const noexcept {
     return m_impl->handle() == rhs.implementation().handle();
@@ -78,7 +69,7 @@ namespace megatech::vulkan {
     const auto& impl = physical_device.implementation();
     const auto good_version = version{ impl.properties_1_0().apiVersion } >= version{ 0, 1, 3, 0 };
     const auto has_primary_queue = impl.primary_queue_family_index() != -1;
-    VK_DECLARE_INSTANCE_PFN(impl.parent().dispatch_table(), vkGetPhysicalDeviceFeatures2);
+    DECLARE_INSTANCE_PFN(impl.parent().dispatch_table(), vkGetPhysicalDeviceFeatures2);
     auto features2 = VkPhysicalDeviceFeatures2{ };
     features2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
     auto local_read_features = VkPhysicalDeviceDynamicRenderingLocalReadFeaturesKHR{ };
@@ -87,13 +78,13 @@ namespace megatech::vulkan {
     vkGetPhysicalDeviceFeatures2(impl.handle(), &features2);
     const auto has_dynamic_rendering = impl.features_1_3().dynamicRendering &&
                                        local_read_features.dynamicRenderingLocalRead &&
-                                       impl.available_extensions().contains("VK_KHR_dyanmic_rendering_local_read");
+                                       impl.available_extensions().contains("VK_KHR_dynamic_rendering_local_read");
     return good_version && has_primary_queue && has_dynamic_rendering;
   }
 
   physical_device_list::physical_device_list(const instance& inst) {
     auto parent = inst.share_implementation();
-    VK_DECLARE_INSTANCE_PFN(parent->dispatch_table(), vkEnumeratePhysicalDevices);
+    DECLARE_INSTANCE_PFN(parent->dispatch_table(), vkEnumeratePhysicalDevices);
     auto sz = std::uint32_t{ 0 };
     VK_CHECK(vkEnumeratePhysicalDevices(parent->handle(), &sz, nullptr));
     auto handles = std::vector<VkPhysicalDevice>(sz);
@@ -101,8 +92,10 @@ namespace megatech::vulkan {
     m_physical_devices.reserve(sz);
     for (auto&& handle : handles)
     {
-      auto tmp = physical_device_description{ parent, handle, internal::tag{ } };
-      if (is_valid(tmp) && parent->is_valid(tmp))
+      using impl_type = physical_device_description::implementation_type;
+      auto ptr = new impl_type{ parent, handle };
+      auto tmp = physical_device_description{ std::shared_ptr<impl_type>{ ptr } };
+      if (parent->validator()(tmp))
       {
         m_physical_devices.emplace_back(tmp);
       }

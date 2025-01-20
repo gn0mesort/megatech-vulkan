@@ -11,9 +11,6 @@
 namespace megatech::vulkan::internal::base {
 
   class loader_impl;
-  struct loader_impl_dtor final {
-    void operator()(loader_impl* p) const noexcept;
-  };
 
 }
 
@@ -24,10 +21,10 @@ namespace megatech::vulkan {
   class loader {
   public:
     using implementation_type = internal::base::loader_impl;
-  protected:
-    explicit loader(implementation_type*&& impl);
-
+  private:
     std::shared_ptr<implementation_type> m_impl;
+  protected:
+    explicit loader(const std::shared_ptr<implementation_type>& impl);
   public:
     loader() = delete;
     loader(const loader& other) = delete;
@@ -44,7 +41,6 @@ namespace megatech::vulkan {
     implementation_type& implementation();
     std::shared_ptr<const implementation_type> share_implementation() const;
   };
-
 
   static_assert(concepts::opaque_object<loader>);
   static_assert(concepts::readonly_sharable_opaque_object<loader>);

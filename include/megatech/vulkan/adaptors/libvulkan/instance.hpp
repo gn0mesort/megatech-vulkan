@@ -1,7 +1,6 @@
 #ifndef MEGATECH_VULKAN_ADAPTORS_LIBVULKAN_INSTANCE_HPP
 #define MEGATECH_VULKAN_ADAPTORS_LIBVULKAN_INSTANCE_HPP
 
-#include <string>
 #include <unordered_set>
 
 #include <megatech/vulkan/instance.hpp>
@@ -9,6 +8,8 @@
 namespace megatech::vulkan {
 
   class version;
+  class application_description;
+  class debug_messenger_description;
 
 }
 
@@ -19,8 +20,8 @@ namespace megatech::vulkan::adaptors::libvulkan {
   class instance final : public megatech::vulkan::instance {
   public:
     instance() = delete;
-    instance(const loader& parent_loader, const std::string& application_name, const version& application_version);
-    instance(const loader& parent_loader, const std::string& application_name, const version& application_version,
+    instance(const loader& parent, const application_description& description);
+    instance(const loader& parent, const application_description& description,
              const std::unordered_set<std::string>& requested_layers);
     instance(const instance& other) = delete;
     instance(instance&& other) = delete;
@@ -31,13 +32,15 @@ namespace megatech::vulkan::adaptors::libvulkan {
     instance& operator=(instance&& rhs) = delete;
   };
 
-  class debug_instance final : public megatech::vulkan::instance {
+  class debug_instance final : public megatech::vulkan::debug_instance {
   public:
     debug_instance() = delete;
-    debug_instance(const loader& parent_loader, const std::string& application_name,
-                   const version& application_version);
-    debug_instance(const loader& parent_loader, const std::string& application_name,
-                   const version& application_version, const std::unordered_set<std::string>& requested_layers);
+    debug_instance(const loader& parent, const application_description& description);
+    debug_instance(const loader& parent, const application_description& description,
+                   const std::unordered_set<std::string>& requested_layers);
+    debug_instance(const loader& parent, const application_description& description,
+                   const std::unordered_set<std::string>& requested_layers,
+                   const debug_messenger_description& messenger_description);
     debug_instance(const debug_instance& other) = delete;
     debug_instance(debug_instance&& other) = delete;
 

@@ -10,6 +10,8 @@
 #include "../../concepts/child_object.hpp"
 #include "../../concepts/handle_owner.hpp"
 
+#include "vulkandefs.hpp"
+
 namespace megatech::vulkan::internal::base {
 
   class instance_impl;
@@ -66,8 +68,8 @@ namespace megatech::vulkan::internal::base {
     const VkQueueFamilyProperties& async_transfer_queue_family_properties() const;
   };
 
-  MEGATECH_VULKAN_ENFORCE_CONCEPT(concepts::readonly_child_object<physical_device_description_impl>);
-  MEGATECH_VULKAN_ENFORCE_CONCEPT(concepts::handle_owner<physical_device_description_impl>);
+  static_assert(concepts::readonly_child_object<physical_device_description_impl>);
+  static_assert(concepts::handle_owner<physical_device_description_impl>);
 
 }
 

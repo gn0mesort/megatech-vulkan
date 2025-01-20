@@ -4,10 +4,6 @@
 #include <memory>
 #include <vector>
 
-#if defined(MEGATECH_VULKAN_INCLUDE_VULKAN_H) && __has_include(<vulkan/vulkan.h>)
-  #include <vulkan/vulkan.h>
-#endif
-
 #include "defs.hpp"
 
 #include "concepts/opaque_object.hpp"
@@ -21,11 +17,7 @@ namespace megatech::vulkan::internal {
 namespace megatech::vulkan::internal::base {
 
   class instance_impl;
-
   class physical_device_description_impl;
-  struct physical_device_description_impl_dtor final {
-    void operator()(physical_device_description_impl* p) const noexcept;
-  };
 
 }
 
@@ -33,9 +25,9 @@ namespace megatech::vulkan {
 
 namespace async_transfer_support {
 
-  constexpr int none = 0;
-  constexpr int combined = 1;
-  constexpr int dedicated = 2;
+  constexpr int none{ 0 };
+  constexpr int combined{ 1 };
+  constexpr int dedicated{ 2 };
 
 }
 
@@ -48,10 +40,7 @@ namespace async_transfer_support {
   private:
     std::shared_ptr<implementation_type> m_impl{ };
   public:
-#ifdef VK_VERSION_1_0
-    physical_device_description(std::shared_ptr<const internal::base::instance_impl> parent, VkPhysicalDevice handle,
-                                const internal::tag&);
-#endif
+    physical_device_description(const std::shared_ptr<implementation_type>& impl);
     physical_device_description(const physical_device_description& other) = default;
     physical_device_description(physical_device_description&& other) = delete;
 
@@ -71,8 +60,8 @@ namespace async_transfer_support {
     int supports_async_transfer() const;
   };
 
-  MEGATECH_VULKAN_ENFORCE_CONCEPT(concepts::opaque_object<physical_device_description>);
-  MEGATECH_VULKAN_ENFORCE_CONCEPT(concepts::readonly_sharable_opaque_object<physical_device_description>);
+  static_assert(concepts::opaque_object<physical_device_description>);
+  static_assert(concepts::readonly_sharable_opaque_object<physical_device_description>);
 
   class physical_device_list final {
   private:
