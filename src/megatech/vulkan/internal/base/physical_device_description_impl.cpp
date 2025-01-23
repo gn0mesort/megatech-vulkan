@@ -1,12 +1,9 @@
-#define VK_NO_PROTOTYPES (1)
-#define MEGATECH_VULKAN_INCLUDE_VULKAN_H (1)
 #include "megatech/vulkan/internal/base/physical_device_description_impl.hpp"
-
 
 #include "megatech/vulkan/internal/base/vulkandefs.hpp"
 #include "megatech/vulkan/internal/base/instance_impl.hpp"
 
-#define VK_DECLARE_INSTANCE_PFN(dt, cmd) MEGATECH_VULKAN_INTERNAL_BASE_DECLARE_INSTANCE_PFN(dt, cmd)
+#define DECLARE_INSTANCE_PFN(dt, cmd) MEGATECH_VULKAN_INTERNAL_BASE_DECLARE_INSTANCE_PFN(dt, cmd)
 #define VK_CHECK(exp) MEGATECH_VULKAN_INTERNAL_BASE_VK_CHECK(exp)
 
 namespace megatech::vulkan::internal::base {
@@ -24,8 +21,9 @@ namespace megatech::vulkan::internal::base {
     m_properties_1_3.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_PROPERTIES;
     m_properties_1_2.pNext = &m_properties_1_3;
     m_properties_1_3.pNext = nullptr;
-    VK_DECLARE_INSTANCE_PFN(m_parent->dispatch_table(), vkGetPhysicalDeviceProperties2);
+    DECLARE_INSTANCE_PFN(m_parent->dispatch_table(), vkGetPhysicalDeviceProperties2);
     vkGetPhysicalDeviceProperties2(m_handle, &properties2);
+    m_properties_1_3.pNext = nullptr;
     m_properties_1_2.pNext = nullptr;
     m_properties_1_1.pNext = nullptr;
     m_properties_1_0 = properties2.properties;
@@ -36,14 +34,18 @@ namespace megatech::vulkan::internal::base {
     m_features_1_1.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_FEATURES;
     m_features_1_2.pNext = &m_features_1_3;
     m_features_1_2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES;
-    m_features_1_3.pNext = nullptr;
+    m_features_1_3.pNext = &m_dynamic_rendering_local_read_features;
     m_features_1_3.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES;
-    VK_DECLARE_INSTANCE_PFN(m_parent->dispatch_table(), vkGetPhysicalDeviceFeatures2);
+    m_dynamic_rendering_local_read_features.pNext = nullptr;
+    m_dynamic_rendering_local_read_features.sType =
+      VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_LOCAL_READ_FEATURES_KHR;
+    DECLARE_INSTANCE_PFN(m_parent->dispatch_table(), vkGetPhysicalDeviceFeatures2);
     vkGetPhysicalDeviceFeatures2(m_handle, &features2);
+    m_features_1_3.pNext = nullptr;
     m_features_1_2.pNext = nullptr;
     m_features_1_1.pNext = nullptr;
     m_features_1_0 = features2.features;
-    VK_DECLARE_INSTANCE_PFN(m_parent->dispatch_table(), vkEnumerateDeviceExtensionProperties);
+    DECLARE_INSTANCE_PFN(m_parent->dispatch_table(), vkEnumerateDeviceExtensionProperties);
     {
       auto sz = std::uint32_t{ 0 };
       VK_CHECK(vkEnumerateDeviceExtensionProperties(m_handle, nullptr, &sz, nullptr));
@@ -64,7 +66,7 @@ namespace megatech::vulkan::internal::base {
         }
       }
     }
-    VK_DECLARE_INSTANCE_PFN(m_parent->dispatch_table(), vkGetPhysicalDeviceQueueFamilyProperties);
+    DECLARE_INSTANCE_PFN(m_parent->dispatch_table(), vkGetPhysicalDeviceQueueFamilyProperties);
     {
       auto sz = std::uint32_t{ 0 };
       vkGetPhysicalDeviceQueueFamilyProperties(m_handle, &sz, nullptr);
@@ -85,10 +87,12 @@ namespace megatech::vulkan::internal::base {
         m_primary_queue_family = !((m_queue_family_properties[0].queueFlags & VK_QUEUE_COMPUTE_BIT) != 0) * -1;
         for (auto i = std::uint32_t{ 1 }; i < m_queue_family_properties.size(); ++i)
         {
-          const auto has_compute = m_queue_family_properties[i].queueFlags & VK_QUEUE_COMPUTE_BIT;
-          const auto has_transfer_only = (!(m_queue_family_properties[i].queueFlags &
-                                            (VK_QUEUE_COMPUTE_BIT | VK_QUEUE_GRAPHICS_BIT)) &&
-                                         (m_queue_family_properties[i].queueFlags & VK_QUEUE_TRANSFER_BIT));
+          const auto has_compute =
+            static_cast<std::int64_t>(m_queue_family_properties[i].queueFlags & VK_QUEUE_COMPUTE_BIT);
+          const auto has_transfer_only =
+            static_cast<std::int64_t>(!(m_queue_family_properties[i].queueFlags &
+                                        (VK_QUEUE_COMPUTE_BIT | VK_QUEUE_GRAPHICS_BIT)) &&
+                                      (m_queue_family_properties[i].queueFlags & VK_QUEUE_TRANSFER_BIT));
           m_async_compute_queue_family = (m_async_compute_queue_family != -1) *
                                          (has_compute * i) + (!has_compute * -1);
           m_async_transfer_queue_family = (m_async_transfer_queue_family != -1) *
@@ -193,17 +197,13 @@ namespace megatech::vulkan::internal::base {
   }
 
   const VkQueueFamilyProperties& physical_device_description_impl::primary_queue_family_properties() const {
-    if (m_primary_queue_family == -1)
-    {
-      // TODO: throw
-    }
     return m_queue_family_properties[m_primary_queue_family];
   }
 
   const VkQueueFamilyProperties& physical_device_description_impl::async_compute_queue_family_properties() const {
     if (m_async_compute_queue_family == -1)
     {
-      // TODO: throw
+      throw error{ "The physical device does not support asynchronous compute operations." };
     }
     return m_queue_family_properties[m_async_compute_queue_family];
   }
@@ -211,9 +211,18 @@ namespace megatech::vulkan::internal::base {
   const VkQueueFamilyProperties& physical_device_description_impl::async_transfer_queue_family_properties() const {
     if (m_async_transfer_queue_family == -1)
     {
-      // TODO: throw
+      throw error{ "The physical device does not support asynchronous transfer operations." };
     }
     return m_queue_family_properties[m_async_transfer_queue_family];
+  }
+
+  bool physical_device_description_impl::has_dynamic_rendering() const {
+    return m_features_1_3.dynamicRendering;
+  }
+
+  bool physical_device_description_impl::has_dynamic_rendering_local_read() const {
+    return m_available_extensions.contains("VK_KHR_dynamic_rendering_local_read") &&
+           m_dynamic_rendering_local_read_features.dynamicRenderingLocalRead;
   }
 
 }

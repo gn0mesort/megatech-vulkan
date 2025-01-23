@@ -4,18 +4,10 @@
 
 #include "megatech/vulkan/internal/base/device_impl.hpp"
 
-namespace megatech::vulkan::internal::base {
-
-  void device_impl_dtor::operator()(device_impl* p) const noexcept {
-    delete p;
-  }
-
-}
-
 namespace megatech::vulkan {
 
-  device::device(implementation_type*&& impl) :
-  m_impl{ std::exchange(impl, nullptr), internal::base::device_impl_dtor{ } } { }
+  device::device(const std::shared_ptr<implementation_type>& impl) :
+  m_impl{ impl } { }
 
   device::implementation_type& device::implementation() {
     return *m_impl;

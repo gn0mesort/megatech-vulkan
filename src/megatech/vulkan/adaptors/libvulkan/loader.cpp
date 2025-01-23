@@ -1,4 +1,3 @@
-#define MEGATECH_VULKAN_INCLUDE_VULKAN_H
 #include "megatech/vulkan/adaptors/libvulkan/loader.hpp"
 
 #include "megatech/vulkan/internal/base/loader_impl.hpp"

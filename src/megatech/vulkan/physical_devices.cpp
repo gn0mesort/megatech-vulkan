@@ -1,5 +1,3 @@
-#define VK_NO_PROTOTYPES (1)
-#define MEGATECH_VULKAN_INCLUDE_VULKAN_H (1)
 #include "megatech/vulkan/physical_devices.hpp"
 
 #include <cinttypes>

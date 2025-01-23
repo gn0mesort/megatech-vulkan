@@ -7,6 +7,7 @@
 #include <megatech/vulkan/dispatch/commands.hpp>
 
 #include "../../error.hpp"
+#include "../../version.hpp"
 
 #define MEGATECH_VULKAN_INTERNAL_BASE_DECLARE_GLOBAL_PFN(dt, cmd) \
   const auto cmd = *reinterpret_cast<const PFN_##cmd*>((dt).get(megatech::vulkan::dispatch::global::command::cmd)); \
@@ -41,7 +42,7 @@
   static_assert(true)
 
 #define MEGATECH_VULKAN_INTERNAL_BASE_DECLARE_DEVICE_PFN_NO_THROW(dt, cmd) \
-  const auto cmd = *reinterpret_cast<const PFN_##cmd*>((dt).get(megatech::vulkan::dispatch::dispatch::command::cmd)); \
+  const auto cmd = *reinterpret_cast<const PFN_##cmd*>((dt).get(megatech::vulkan::dispatch::device::command::cmd)); \
   static_assert(true)
 
 #define MEGATECH_VULKAN_INTERNAL_BASE_VK_CHECK(exp) \
@@ -53,5 +54,11 @@
     } \
   } \
   while (0)
+
+namespace megatech::vulkan::internal::base {
+
+  const version MINIMUM_VULKAN_VERSION{ VK_API_VERSION_1_3 };
+
+}
 
 #endif

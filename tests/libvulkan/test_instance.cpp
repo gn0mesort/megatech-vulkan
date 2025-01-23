@@ -147,15 +147,32 @@ TEST_CASE("Instance ownership chains should ensure parent object lifetimes.", "[
   {
     auto ldr = loader{ };
     loader_ptr = ldr.share_implementation();
+    REQUIRE(loader_ptr.use_count() == 1);
     auto inst = instance{ ldr, { "test_instance", version{ 0, 1, 0, 0 } } };
     instance_ptr = inst.share_implementation();
+    REQUIRE(loader_ptr.use_count() == 2);
+    REQUIRE(instance_ptr.use_count() == 1);
     physical_devices = new physical_device_list{ inst };
+    REQUIRE(loader_ptr.use_count() == 2);
+    REQUIRE(instance_ptr.use_count() >= 1);
   }
   REQUIRE(loader_ptr.use_count() > 0);
   REQUIRE(instance_ptr.use_count() > 0);
   delete physical_devices;
   REQUIRE(loader_ptr.use_count() == 0);
   REQUIRE(instance_ptr.use_count() == 0);
+}
+
+TEST_CASE("Physical Devices should never return a queue family index greater than the number of queues available", "[instance][adaptor-libvulkan]") {
+  auto ldr = loader{ };
+  auto inst = instance{ ldr, { "test_instance", version{ 0, 1, 0, 0 } } };
+  auto physical_devices = physical_device_list{ inst };
+  for (const auto& device : physical_devices)
+  {
+    REQUIRE(device.implementation().primary_queue_family_index() < static_cast<std::int64_t>(device.implementation().queue_family_properties().size()));
+    REQUIRE(device.implementation().async_compute_queue_family_index() < static_cast<std::int64_t>(device.implementation().queue_family_properties().size()));
+    REQUIRE(device.implementation().async_transfer_queue_family_index() < static_cast<std::int64_t>(device.implementation().queue_family_properties().size()));
+  }
 }
 
 int main(int argc, char** argv) {

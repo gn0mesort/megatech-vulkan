@@ -10,9 +10,6 @@
 namespace megatech::vulkan::internal::base {
 
   class device_impl;
-  struct device_impl_dtor final {
-    void operator()(device_impl* p) const noexcept;
-  };
 
 }
 
@@ -22,7 +19,7 @@ namespace megatech::vulkan {
   public:
     using implementation_type = internal::base::device_impl;
   protected:
-    device(implementation_type*&& impl);
+    explicit device(const std::shared_ptr<implementation_type>& impl);
 
     std::shared_ptr<implementation_type> m_impl{ };
   public:
@@ -40,8 +37,8 @@ namespace megatech::vulkan {
     std::shared_ptr<const implementation_type> share_implementation() const;
   };
 
-  MEGATECH_VULKAN_ENFORCE_CONCEPT(concepts::opaque_object<device>);
-  MEGATECH_VULKAN_ENFORCE_CONCEPT(concepts::readonly_sharable_opaque_object<device>);
+  static_assert(concepts::opaque_object<device>);
+  static_assert(concepts::readonly_sharable_opaque_object<device>);
 
 }
 

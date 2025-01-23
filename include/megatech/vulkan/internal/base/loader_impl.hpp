@@ -13,9 +13,7 @@
 
 namespace megatech::vulkan::internal::base {
 
-  class loader_impl {
-  private:
-    std::shared_ptr<PFN_vkGetInstanceProcAddr> m_gipa{ };
+  class loader_impl final {
   protected:
     loader_impl() = default;
 
@@ -27,7 +25,7 @@ namespace megatech::vulkan::internal::base {
     loader_impl(const loader_impl& other) = delete;
     loader_impl(loader_impl&& other) = delete;
 
-    virtual ~loader_impl() noexcept = default;
+    ~loader_impl() noexcept = default;
 
     loader_impl& operator=(const loader_impl& rhs) = delete;
     loader_impl& operator=(loader_impl&& rhs) = delete;

@@ -1,13 +1,17 @@
 #include "megatech/vulkan/internal/base/instance_impl.hpp"
 
 #include <utility>
+#include <algorithm>
 
 #include "config.hpp"
+
+#include "megatech/vulkan/application_description.hpp"
 
 #include "megatech/vulkan/internal/base/physical_device_validator.hpp"
 #include "megatech/vulkan/internal/base/loader_impl.hpp"
 
 #define DECLARE_GLOBAL_PFN(dt, cmd) MEGATECH_VULKAN_INTERNAL_BASE_DECLARE_GLOBAL_PFN(dt, cmd)
+#define DECLARE_GLOBAL_PFN_NO_THROW(dt, cmd) MEGATECH_VULKAN_INTERNAL_BASE_DECLARE_GLOBAL_PFN_NO_THROW(dt, cmd)
 #define DECLARE_INSTANCE_PFN(dt, cmd) MEGATECH_VULKAN_INTERNAL_BASE_DECLARE_INSTANCE_PFN(dt, cmd)
 #define DECLARE_INSTANCE_PFN_NO_THROW(dt, cmd) MEGATECH_VULKAN_INTERNAL_BASE_DECLARE_INSTANCE_PFN_NO_THROW(dt, cmd)
 #define VK_CHECK(exp) MEGATECH_VULKAN_INTERNAL_BASE_VK_CHECK(exp)
@@ -34,25 +38,96 @@ namespace {
 
 namespace megatech::vulkan::internal::base {
 
-  instance_impl::instance_impl(const std::shared_ptr<const parent_type>& parent,
+  instance_description::instance_description(const std::unordered_set<std::string>& requested_layers,
+                                             const std::unordered_set<std::string>& requested_extensions,
+                                             const std::unordered_set<std::string>& required_extensions) :
+  m_requested_layers{ requested_layers },
+  m_requested_extensions{ requested_extensions },
+  m_required_extensions{ required_extensions } { }
+
+  const std::unordered_set<std::string>& instance_description::requested_layers() const {
+    return m_requested_layers;
+  }
+
+  const std::unordered_set<std::string>& instance_description::requested_extensions() const {
+    return m_requested_extensions;
+  }
+
+  const std::unordered_set<std::string>& instance_description::required_extensions() const {
+    return m_required_extensions;
+  }
+
+  instance_impl::instance_impl(const std::shared_ptr<const loader_impl>& parent,
                                std::unique_ptr<const physical_device_validator>&& validator) :
   m_validator{ std::move(validator) },
   m_parent{ parent } { }
 
   instance_impl::instance_impl(const std::shared_ptr<const loader_impl>& parent,
                                std::unique_ptr<const physical_device_validator>&& validator,
-                               const VkInstanceCreateInfo& instance_info) :
-  instance_impl{ parent, std::move(validator) } {
+                               const application_description& app_description,
+                               const instance_description& description) :
+  m_validator{ std::move(validator) },
+  m_parent{ parent } {
+    {
+      DECLARE_GLOBAL_PFN_NO_THROW(parent->dispatch_table(), vkEnumerateInstanceVersion);
+      if (!vkEnumerateInstanceVersion)
+      {
+        throw error{ "Vulkan instances must support Vulkan >=1.3." };
+      }
+      auto ver = std::uint32_t{ 0 };
+      vkEnumerateInstanceVersion(&ver);
+      if (version{ ver } < MINIMUM_VULKAN_VERSION)
+      {
+        throw error{ "Vulkan instances must support Vulkan >=1.3." };
+      }
+    }
+    auto application_info = VkApplicationInfo{ };
+    application_info.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
+    application_info.applicationVersion = static_cast<std::uint32_t>(app_description.version());
+    application_info.pApplicationName = app_description.name().data();
+    application_info.apiVersion = static_cast<std::uint32_t>(MINIMUM_VULKAN_VERSION);
+    auto instance_info = VkInstanceCreateInfo{ };
+    instance_info.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
+    instance_info.pApplicationInfo = &application_info;
+    for (const auto& layer : description.requested_layers())
+    {
+      if (parent->available_layers().contains(layer))
+      {
+        m_enabled_layers.insert(layer);
+      }
+    }
+    auto enabled_layers = std::vector<const char*>{ };
+    for (const auto& layer : m_enabled_layers)
+    {
+      enabled_layers.emplace_back(layer.data());
+    }
+    instance_info.enabledLayerCount = enabled_layers.size();
+    instance_info.ppEnabledLayerNames = enabled_layers.data();
+    for (const auto& extension : description.required_extensions())
+    {
+      m_enabled_extensions.insert(extension);
+    }
+    for (const auto& extension : description.requested_extensions())
+    {
+      auto valid = parent->available_instance_extensions().contains(extension);
+      for (const auto& layer : m_enabled_layers)
+      {
+        valid |= parent->available_instance_extensions(layer).contains(extension);
+      }
+      if (valid)
+      {
+        m_enabled_extensions.insert(extension);
+      }
+    }
+    auto enabled_extensions = std::vector<const char*>{ };
+    for (const auto& extension : m_enabled_extensions)
+    {
+      enabled_extensions.emplace_back(extension.data());
+    }
+    instance_info.enabledExtensionCount = enabled_extensions.size();
+    instance_info.ppEnabledExtensionNames = enabled_extensions.data();
     DECLARE_GLOBAL_PFN(m_parent->dispatch_table(), vkCreateInstance);
     VK_CHECK(vkCreateInstance(&instance_info, nullptr, &m_instance));
-    for (auto i = std::uint32_t{ 0 }; i < instance_info.enabledLayerCount; ++i)
-    {
-      m_enabled_layers.insert(instance_info.ppEnabledLayerNames[i]);
-    }
-    for (auto i = std::uint32_t{ 0 }; i < instance_info.enabledExtensionCount; ++i)
-    {
-      m_enabled_extensions.insert(instance_info.ppEnabledExtensionNames[i]);
-    }
     m_idt.reset(new dispatch::instance::table{ m_parent->dispatch_table(), m_instance });
   }
 
@@ -92,20 +167,36 @@ namespace megatech::vulkan::internal::base {
   }
 
   debug_instance_impl::debug_instance_impl(const std::shared_ptr<const parent_type>& parent,
-                                           std::unique_ptr<const physical_device_validator>&& validator) :
-  instance_impl{ parent, std::move(validator) } { }
+                                           std::unique_ptr<const physical_device_validator>&& validator,
+                                           const application_description& app_description,
+                                           const instance_description& description) :
+  instance_impl{ parent, std::move(validator), app_description, description } { }
 
   debug_instance_impl::debug_instance_impl(const std::shared_ptr<const parent_type>& parent,
                                            std::unique_ptr<const physical_device_validator>&& validator,
-                                           const VkInstanceCreateInfo& instance_info) :
-  instance_impl{ parent, std::move(validator), instance_info } { }
-
-  debug_instance_impl::debug_instance_impl(const std::shared_ptr<const parent_type>& parent,
-                                           std::unique_ptr<const physical_device_validator>&& validator,
+                                           const application_description& app_description,
                                            const debug_messenger_description& messenger_description,
-                                           VkInstanceCreateInfo instance_info) :
+                                           const instance_description& description) :
   instance_impl{ parent, std::move(validator) },
   m_message_sink{ messenger_description.sink() } {
+    {
+      DECLARE_GLOBAL_PFN_NO_THROW(parent->dispatch_table(), vkEnumerateInstanceVersion);
+      if (!vkEnumerateInstanceVersion)
+      {
+        throw error{ "Vulkan instances must support Vulkan >=1.3." };
+      }
+      auto ver = std::uint32_t{ 0 };
+      vkEnumerateInstanceVersion(&ver);
+      if (version{ ver } < MINIMUM_VULKAN_VERSION)
+      {
+        throw error{ "Vulkan instances must support Vulkan >=1.3." };
+      }
+    }
+    auto application_info = VkApplicationInfo{ };
+    application_info.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
+    application_info.applicationVersion = static_cast<std::uint32_t>(app_description.version());
+    application_info.pApplicationName = app_description.name().data();
+    application_info.apiVersion = static_cast<std::uint32_t>(MINIMUM_VULKAN_VERSION);
     auto debug_utils_messenger_info = VkDebugUtilsMessengerCreateInfoEXT{ };
     debug_utils_messenger_info.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
     debug_utils_messenger_info.messageSeverity =
@@ -114,21 +205,49 @@ namespace megatech::vulkan::internal::base {
       static_cast<VkDebugUtilsMessageTypeFlagsEXT>(messenger_description.accepted_message_types());
     debug_utils_messenger_info.pfnUserCallback = vkDebugUtilsMessengerCallbackEXT;
     debug_utils_messenger_info.pUserData = &m_message_sink;
-    if (instance_info.pNext)
+    auto instance_info = VkInstanceCreateInfo{ };
+    instance_info.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
+    instance_info.pApplicationInfo = &application_info;
+    for (const auto& layer : description.requested_layers())
     {
-      debug_utils_messenger_info.pNext = instance_info.pNext;
+      if (parent->available_layers().contains(layer))
+      {
+        m_enabled_layers.insert(layer);
+      }
     }
+    auto enabled_layers = std::vector<const char*>{ };
+    for (const auto& layer : m_enabled_layers)
+    {
+      enabled_layers.emplace_back(layer.data());
+    }
+    instance_info.enabledLayerCount = enabled_layers.size();
+    instance_info.ppEnabledLayerNames = enabled_layers.data();
+    for (const auto& extension : description.required_extensions())
+    {
+      m_enabled_extensions.insert(extension);
+    }
+    for (const auto& extension : description.requested_extensions())
+    {
+      auto valid = parent->available_instance_extensions().contains(extension);
+      for (const auto& layer : m_enabled_layers)
+      {
+        valid |= parent->available_instance_extensions(layer).contains(extension);
+      }
+      if (valid)
+      {
+        m_enabled_extensions.insert(extension);
+      }
+    }
+    auto enabled_extensions = std::vector<const char*>{ };
+    for (const auto& extension : m_enabled_extensions)
+    {
+      enabled_extensions.emplace_back(extension.data());
+    }
+    instance_info.enabledExtensionCount = enabled_extensions.size();
+    instance_info.ppEnabledExtensionNames = enabled_extensions.data();
     instance_info.pNext = &debug_utils_messenger_info;
     DECLARE_GLOBAL_PFN(m_parent->dispatch_table(), vkCreateInstance);
     VK_CHECK(vkCreateInstance(&instance_info, nullptr, &m_instance));
-    for (auto i = std::uint32_t{ 0 }; i < instance_info.enabledLayerCount; ++i)
-    {
-      m_enabled_layers.insert(instance_info.ppEnabledLayerNames[i]);
-    }
-    for (auto i = std::uint32_t{ 0 }; i < instance_info.enabledExtensionCount; ++i)
-    {
-      m_enabled_extensions.insert(instance_info.ppEnabledExtensionNames[i]);
-    }
     m_idt.reset(new dispatch::instance::table{ m_parent->dispatch_table(), m_instance });
     DECLARE_INSTANCE_PFN(*m_idt, vkCreateDebugUtilsMessengerEXT);
     VK_CHECK(vkCreateDebugUtilsMessengerEXT(m_instance, &debug_utils_messenger_info, nullptr,

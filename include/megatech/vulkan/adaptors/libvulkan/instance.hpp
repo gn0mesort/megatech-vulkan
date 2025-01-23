@@ -20,8 +20,8 @@ namespace megatech::vulkan::adaptors::libvulkan {
   class instance final : public megatech::vulkan::instance {
   public:
     instance() = delete;
-    instance(const loader& parent, const application_description& description);
-    instance(const loader& parent, const application_description& description,
+    instance(const loader& parent, const application_description& app_description);
+    instance(const loader& parent, const application_description& app_description,
              const std::unordered_set<std::string>& requested_layers);
     instance(const instance& other) = delete;
     instance(instance&& other) = delete;
@@ -35,10 +35,10 @@ namespace megatech::vulkan::adaptors::libvulkan {
   class debug_instance final : public megatech::vulkan::debug_instance {
   public:
     debug_instance() = delete;
-    debug_instance(const loader& parent, const application_description& description);
-    debug_instance(const loader& parent, const application_description& description,
+    debug_instance(const loader& parent, const application_description& app_description);
+    debug_instance(const loader& parent, const application_description& app_description,
                    const std::unordered_set<std::string>& requested_layers);
-    debug_instance(const loader& parent, const application_description& description,
+    debug_instance(const loader& parent, const application_description& app_description,
                    const std::unordered_set<std::string>& requested_layers,
                    const debug_messenger_description& messenger_description);
     debug_instance(const debug_instance& other) = delete;

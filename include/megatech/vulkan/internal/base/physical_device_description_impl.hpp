@@ -28,6 +28,7 @@ namespace megatech::vulkan::internal::base {
     VkPhysicalDeviceVulkan11Features m_features_1_1{ };
     VkPhysicalDeviceVulkan12Features m_features_1_2{ };
     VkPhysicalDeviceVulkan13Features m_features_1_3{ };
+    VkPhysicalDeviceDynamicRenderingLocalReadFeaturesKHR m_dynamic_rendering_local_read_features{ };
     std::vector<VkQueueFamilyProperties> m_queue_family_properties{ };
     std::unordered_set<std::string> m_available_extensions{ };
 
@@ -66,6 +67,8 @@ namespace megatech::vulkan::internal::base {
     const VkQueueFamilyProperties& primary_queue_family_properties() const;
     const VkQueueFamilyProperties& async_compute_queue_family_properties() const;
     const VkQueueFamilyProperties& async_transfer_queue_family_properties() const;
+    bool has_dynamic_rendering() const;
+    bool has_dynamic_rendering_local_read() const;
   };
 
   static_assert(concepts::readonly_child_object<physical_device_description_impl>);
