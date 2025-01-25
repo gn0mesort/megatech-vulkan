@@ -10,8 +10,21 @@
 
 namespace megatech::vulkan::internal::base {
 
-  loader_impl::loader_impl(const PFN_vkGetInstanceProcAddr gipa) :
-  m_gdt{ new dispatch::global::table{ gipa } } {
+  loader_function_owner::loader_function_owner(const PFN_vkGetInstanceProcAddr gipa) :
+  m_gipa{ gipa } {
+    if (!m_gipa)
+    {
+      throw error{ "The loader entry function \"vkGetInstanceProcAddr\" cannot be null." };
+    }
+  }
+
+  PFN_vkGetInstanceProcAddr loader_function_owner::pfn() const {
+    return m_gipa;
+  }
+
+  loader_impl::loader_impl(const std::shared_ptr<const loader_function_owner>& pfn_owner) :
+  m_pfn_owner{ pfn_owner },
+  m_gdt{ new dispatch::global::table{ m_pfn_owner->pfn() } } {
     auto sz = std::uint32_t{ };
     {
       DECLARE_GLOBAL_PFN(*m_gdt, vkEnumerateInstanceLayerProperties);

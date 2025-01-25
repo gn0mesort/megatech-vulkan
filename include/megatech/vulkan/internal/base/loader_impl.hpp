@@ -13,15 +13,34 @@
 
 namespace megatech::vulkan::internal::base {
 
+  class loader_function_owner {
+  private:
+    PFN_vkGetInstanceProcAddr m_gipa{ };
+  protected:
+    loader_function_owner(const PFN_vkGetInstanceProcAddr gipa);
+  public:
+    loader_function_owner() = delete;
+    loader_function_owner(const loader_function_owner& other) = delete;
+    loader_function_owner(loader_function_owner&& other) = delete;
+
+    virtual ~loader_function_owner() noexcept = default;
+
+    loader_function_owner& operator=(const loader_function_owner& rhs) = delete;
+    loader_function_owner& operator=(loader_function_owner&& rhs) = delete;
+
+    PFN_vkGetInstanceProcAddr pfn() const;
+  };
+
   class loader_impl final {
   protected:
     loader_impl() = default;
 
+    std::shared_ptr<const loader_function_owner> m_pfn_owner{ };
     std::unique_ptr<dispatch::global::table> m_gdt{ };
     std::unordered_set<layer_description> m_available_layers{ };
     std::unordered_map<std::string, std::unordered_set<std::string>> m_available_extensions{ };
   public:
-    explicit loader_impl(const PFN_vkGetInstanceProcAddr gipa);
+    ction_owner>& pfn_owner);
     loader_impl(const loader_impl& other) = delete;
     loader_impl(loader_impl&& other) = delete;
 
