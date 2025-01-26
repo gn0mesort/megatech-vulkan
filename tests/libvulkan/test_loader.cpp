@@ -5,18 +5,15 @@
 
 #include <catch2/catch_all.hpp>
 
-#define VK_NO_PROTOTYPES (1)
-#include <vulkan/vulkan.h>
 
+#include <megatech/vulkan.hpp>
 #include <megatech/vulkan/dispatch.hpp>
+#include <megatech/vulkan/adaptors/libvulkan.hpp>
 
-#include <megatech/vulkan/loader.hpp>
-#include <megatech/vulkan/layer_description.hpp>
-
+#include <megatech/vulkan/internal/base/vulkandefs.hpp>
 #include <megatech/vulkan/internal/base/layer_description_proxy.hpp>
 #include <megatech/vulkan/internal/base/loader_impl.hpp>
 
-#include <megatech/vulkan/adaptors/libvulkan.hpp>
 
 #define DECLARE_GLOBAL_PFN(dt, cmd) \
   const auto cmd = *reinterpret_cast<const PFN_##cmd*>((dt).get(megatech::vulkan::dispatch::global::command::cmd)); \

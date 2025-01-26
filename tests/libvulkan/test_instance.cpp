@@ -7,26 +7,15 @@
 
 #include <catch2/catch_all.hpp>
 
-#define VK_NO_PROTOTYPES (1)
-#include <vulkan/vulkan.h>
-
+#include <megatech/vulkan.hpp>
 #include <megatech/vulkan/dispatch.hpp>
-
-#include <megatech/vulkan/error.hpp>
-#include <megatech/vulkan/bitmask.hpp>
-#include <megatech/vulkan/loader.hpp>
-#include <megatech/vulkan/application_description.hpp>
-#include <megatech/vulkan/debug_messenger_description.hpp>
-#include <megatech/vulkan/instance.hpp>
-#include <megatech/vulkan/physical_devices.hpp>
+#include <megatech/vulkan/adaptors/libvulkan.hpp>
 
 #include <megatech/vulkan/internal/base/vulkandefs.hpp>
 #include <megatech/vulkan/internal/base/loader_impl.hpp>
 #include <megatech/vulkan/internal/base/instance_impl.hpp>
 #include <megatech/vulkan/internal/base/physical_device_description_impl.hpp>
 
-#include <megatech/vulkan/adaptors/libvulkan/loader.hpp>
-#include <megatech/vulkan/adaptors/libvulkan/instance.hpp>
 
 using megatech::vulkan::bitmask;
 using megatech::vulkan::version;

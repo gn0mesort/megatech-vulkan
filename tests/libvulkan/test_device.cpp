@@ -2,17 +2,8 @@
 
 #include <catch2/catch_all.hpp>
 
-#include <megatech/vulkan/bitmask.hpp>
-#include <megatech/vulkan/version.hpp>
-#include <megatech/vulkan/loader.hpp>
-#include <megatech/vulkan/application_description.hpp>
-#include <megatech/vulkan/instance.hpp>
-#include <megatech/vulkan/debug_messenger_description.hpp>
-#include <megatech/vulkan/physical_devices.hpp>
-
-#include <megatech/vulkan/adaptors/libvulkan/loader.hpp>
-#include <megatech/vulkan/adaptors/libvulkan/instance.hpp>
-#include <megatech/vulkan/adaptors/libvulkan/device.hpp>
+#include <megatech/vulkan.hpp>
+#include <megatech/vulkan/adaptors/libvulkan.hpp>
 
 using megatech::vulkan::bitmask;
 using megatech::vulkan::version;
