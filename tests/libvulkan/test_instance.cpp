@@ -10,11 +10,7 @@
 #include <megatech/vulkan.hpp>
 #include <megatech/vulkan/dispatch.hpp>
 #include <megatech/vulkan/adaptors/libvulkan.hpp>
-
-#include <megatech/vulkan/internal/base/vulkandefs.hpp>
-#include <megatech/vulkan/internal/base/loader_impl.hpp>
-#include <megatech/vulkan/internal/base/instance_impl.hpp>
-#include <megatech/vulkan/internal/base/physical_device_description_impl.hpp>
+#include <megatech/vulkan/internal/base.hpp>
 
 
 using megatech::vulkan::bitmask;

@@ -9,10 +9,7 @@
 #include <megatech/vulkan.hpp>
 #include <megatech/vulkan/dispatch.hpp>
 #include <megatech/vulkan/adaptors/libvulkan.hpp>
-
-#include <megatech/vulkan/internal/base/vulkandefs.hpp>
-#include <megatech/vulkan/internal/base/layer_description_proxy.hpp>
-#include <megatech/vulkan/internal/base/loader_impl.hpp>
+#include <megatech/vulkan/internal/base.hpp>
 
 
 #define DECLARE_GLOBAL_PFN(dt, cmd) \
