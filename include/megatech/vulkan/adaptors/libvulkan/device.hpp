@@ -11,16 +11,31 @@ namespace megatech::vulkan {
 
 namespace megatech::vulkan::adaptors::libvulkan {
 
+  /**
+   * @brief A Vulkan device.
+   */
   class device final : public megatech::vulkan::device {
   public:
+    /**
+     * @brief Construct a device.
+     * @param description The description of the physical device to initialize.
+     */
     explicit device(const physical_device_description& description);
+
+    /// @cond
     device(const device& other) = delete;
     device(device&& other) = delete;
+    /// @endcond
 
+    /**
+     * @brief Destroy a device.
+     */
     ~device() noexcept = default;
 
+    /// @cond
     device& operator=(const device& rhs) = delete;
     device& operator=(device&& rhs) = delete;
+    /// @endcond
   };
 
 }

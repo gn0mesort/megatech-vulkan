@@ -3,8 +3,6 @@
 
 #include <memory>
 
-#include "defs.hpp"
-
 #include "concepts/opaque_object.hpp"
 
 namespace megatech::vulkan::internal::base {
@@ -15,6 +13,11 @@ namespace megatech::vulkan::internal::base {
 
 namespace megatech::vulkan {
 
+  /**
+   * @brief A Vulkan device.
+   * @details Devices are fully functional Vulkan-capable hardware that are ready to accept commands. It is possible
+   *          for an application to instantiate many devices, but a single device is generally servicable.
+   */
   class device {
   public:
     using implementation_type = internal::base::device_impl;
@@ -23,17 +26,40 @@ namespace megatech::vulkan {
 
     std::shared_ptr<implementation_type> m_impl{ };
   public:
+    /// @cond
     device() = delete;
     device(const device& other) = delete;
     device(device&& other) = delete;
+    /// @endcond
 
+    /**
+     * @brief Destroy a device.
+     */
     virtual ~device() noexcept = default;
 
+    /// @cond
     device& operator=(const device& other) = delete;
     device& operator=(device&& other) = delete;
+    /// @endcond
 
-    implementation_type& implementation();
+    /**
+     * @brief Retrieve an opaque reference to the underlying implementation.
+     * @return A reference to the underlying implementation.
+     */
     const implementation_type& implementation() const;
+
+    /**
+     * @brief Retrieve an opaque reference to the underlying implementation.
+     * @return A reference to the underlying implementation.
+     */
+    implementation_type& implementation();
+
+    /**
+     * @brief Retrieve a sharable reference to the underlying implementation.
+     * @details share_implementation() can be used to extend the life of the underlying implementation object. This
+     *          is used, primarily, to ensure valid ownership in dependent objects.
+     * @return A shareable reference to the underlying implmentation.
+     */
     std::shared_ptr<const implementation_type> share_implementation() const;
   };
 

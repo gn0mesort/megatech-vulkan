@@ -19,6 +19,9 @@ namespace mvib = megatech::vulkan::internal::base;
 
 namespace megatech::vulkan::adaptors::libvulkan {
 
+  instance::instance(const loader& parent, const std::unordered_set<std::string>& requested_layers) :
+  instance{ parent, { "", { 0, 1, 0, 0 } }, requested_layers } { }
+
   instance::instance(const loader& parent, const application_description& app_description) :
   instance{ parent, app_description, { } } { }
 
@@ -32,6 +35,9 @@ namespace megatech::vulkan::adaptors::libvulkan {
                                         description };
     return std::shared_ptr<implementation_type>{ ptr };
   }(parent, app_description, requested_layers) } { }
+
+  debug_instance::debug_instance(const loader& parent, const std::unordered_set<std::string>& requested_layers) :
+  debug_instance{ parent, { "", { 0, 1, 0, 0 } }, requested_layers } { }
 
   debug_instance::debug_instance(const loader& parent, const application_description& app_description) :
   debug_instance{ parent, app_description, { } } { }

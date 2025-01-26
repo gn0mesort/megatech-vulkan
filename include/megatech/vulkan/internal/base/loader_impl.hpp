@@ -40,7 +40,7 @@ namespace megatech::vulkan::internal::base {
     std::unordered_set<layer_description> m_available_layers{ };
     std::unordered_map<std::string, std::unordered_set<std::string>> m_available_extensions{ };
   public:
-    ction_owner>& pfn_owner);
+    loader_impl(const std::shared_ptr<const loader_function_owner>& pfn_owner);
     loader_impl(const loader_impl& other) = delete;
     loader_impl(loader_impl&& other) = delete;
 

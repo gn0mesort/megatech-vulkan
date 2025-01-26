@@ -1,13 +1,13 @@
-#define VK_NO_PROTOTYPES (1)
-#define MEGATECH_VULKAN_INCLUDE_VULKAN_H (1)
 #include "megatech/vulkan/error.hpp"
+
+#include "megatech/vulkan/internal/base/vulkandefs.hpp"
 
 namespace megatech::vulkan {
 
   error::error(const std::string& message, const std::source_location& location) :
   error{ message, VK_ERROR_UNKNOWN, location } { }
 
-  error::error(const std::string& message, const VkResult vk_result, const std::source_location& location) :
+  error::error(const std::string& message, const std::int_least64_t vk_result, const std::source_location& location) :
   m_vk_result{ vk_result }, m_message{ message }, m_location{ location } { }
 
   const std::string& error::message() const noexcept {
@@ -22,8 +22,8 @@ namespace megatech::vulkan {
     return m_location;
   }
 
-  VkResult error::vk_result() const noexcept {
-    return static_cast<VkResult>(m_vk_result);
+  std::int_least64_t error::vk_result() const noexcept {
+    return m_vk_result;
   }
 
 }
