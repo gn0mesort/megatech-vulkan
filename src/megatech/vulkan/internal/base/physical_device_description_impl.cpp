@@ -132,6 +132,10 @@ namespace megatech::vulkan::internal::base {
   }
 
   void physical_device_description_impl::add_required_extension(const std::string& extension) {
+    if (extension.empty())
+    {
+      return;
+    }
     m_required_extensions.insert(extension);
   }
 

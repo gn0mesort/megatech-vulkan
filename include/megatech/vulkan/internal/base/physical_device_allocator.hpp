@@ -1,3 +1,4 @@
+/// @cond INTERNAL
 #ifndef MEGATECH_VULKAN_INTERNAL_BASE_PHYSICAL_DEVICE_ALLOCATOR_HPP
 #define MEGATECH_VULKAN_INTERNAL_BASE_PHYSICAL_DEVICE_ALLOCATOR_HPP
 
@@ -83,3 +84,4 @@ namespace megatech::vulkan::internal::base {
 }
 
 #endif
+/// @endcond
