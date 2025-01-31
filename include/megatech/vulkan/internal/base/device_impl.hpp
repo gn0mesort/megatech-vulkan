@@ -40,7 +40,7 @@ namespace megatech::vulkan::internal::base {
 
     /**
      * @brief Construct a device_impl.
-     * @param parent A shared_ptr to a read-only physical_device_description_impl.
+     * @param parent A shared_ptr to a read-only physical_device_description_impl. This must not be null.
      * @param description A description of the device to construct.
      */
     device_impl(const std::shared_ptr<const parent_type>& parent);
