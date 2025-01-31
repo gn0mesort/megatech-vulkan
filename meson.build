@@ -44,6 +44,16 @@ config.set_quoted('CONFIG_VULKAN_ENGINE_NAME', meson.project_name())
 config.set('CONFIG_VULKAN_ENGINE_VERSION_MAJOR', version_major)
 config.set('CONFIG_VULKAN_ENGINE_VERSION_MINOR', version_minor)
 config.set('CONFIG_VULKAN_ENGINE_VERSION_PATCH', version_patch)
+compiler = meson.get_compiler('cpp')
+if compiler.get_id() == 'gcc'
+  config.set('CONFIG_COMPILER_GCC', 1)
+elif compiler.get_id() == 'clang'
+  config.set('CONFIG_COMPILER_CLANG', 1)
+elif compiler.get_id() == 'msvc'
+  config.set('CONFIG_COMPILER_MSVC', 1)
+else
+  config.set('CONFIG_COMPILER_UNKNOWN', 1)
+endif
 sources = [
   files('src/megatech/vulkan/error.cpp', 'src/megatech/vulkan/version.cpp',
         'src/megatech/vulkan/application_description.cpp', 'src/megatech/vulkan/debug_messenger_description.cpp',
@@ -75,6 +85,7 @@ megatech_vulkan_adaptor_libvulkan_lib = library('@0@-adaptor-@1@'.format(meson.p
 megatech_vulkan_adaptor_libvulkan_dep = declare_dependency(link_with: megatech_vulkan_adaptor_libvulkan_lib,
                                                            include_directories: includes)
 subdir('tests')
+subdir('examples')
 doxygen = find_program('doxygen', disabler: true)
 doc_env = environment()
 doc_env.set('DOXYGEN_PROJECT_NAME', meson.project_name())
