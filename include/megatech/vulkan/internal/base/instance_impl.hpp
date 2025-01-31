@@ -1,3 +1,4 @@
+/// @cond INTERNAL
 #ifndef MEGATECH_VULKAN_INTERNAL_BASE_INSTANCE_IMPL_HPP
 #define MEGATECH_VULKAN_INTERNAL_BASE_INSTANCE_IMPL_HPP
 
@@ -29,33 +30,98 @@ namespace megatech::vulkan::internal::base {
   class loader_impl;
   class physical_device_validator;
 
+  /**
+   * @brief A desctiption of a Vulkan instance.
+   * @details instance_descriptions replace VkInstanceCreateInfo. More so than VkDeviceCreateInfo, most of the
+   *          configuration of VkInstanceCreateInfo isn't appropriate for client applications. This exposes layers
+   *          and extensions only.
+   */
   class instance_description final {
   private:
     std::unordered_set<std::string> m_requested_layers{ };
     std::unordered_set<std::string> m_requested_extensions{ };
     std::unordered_set<std::string> m_required_extensions{ };
   public:
+    /**
+     * @brief Construct an instance_description.
+     */
     instance_description() = default;
+
+    /**
+     * @brief Construct an instance_description.
+     * @param requested_layers A set of requested (optional) Vulkan layers to enable if they are available.
+     * @param requested_extensions A set of requested (optional) Vulkan instance extensions to enable if they are
+     *                             available.
+     * @param required_extensions A set of required (mandatory) Vulkan instance extensions to enable.
+     */
     instance_description(const std::unordered_set<std::string>& requested_layers,
                          const std::unordered_set<std::string>& requested_extensions,
                          const std::unordered_set<std::string>& required_extensions);
+
+    /**
+     * @brief Copy an instance_description.
+     * @param other The instance_description to copy.
+     */
     instance_description(const instance_description& other) = default;
+
+    /**
+     * @brief Move an instance_description.
+     * @param other The instance_description to move.
+     */
     instance_description(instance_description&& other) = default;
 
+    /**
+     * @brief Destroy an instance_description.
+     */
     ~instance_description() noexcept = default;
 
+    /**
+     * @brief Copy-assign an instance_description.
+     * @param rhs The instance_description to copy.
+     * @return A reference to the copied-to instance_description.
+     */
     instance_description& operator=(const instance_description& other) = default;
+
+    /**
+     * @brief Move-assign an instance_description.
+     * @param rhs The instance_description to move.
+     * @return A reference to the moved-to instance_description.
+     */
     instance_description& operator=(instance_description&& other) = default;
 
+    /**
+     * @brief Retrieve an instance_description's set of requested layers.
+     * @return A read-only reference to the set of requested layers.
+     */
     const std::unordered_set<std::string>& requested_layers() const;
+
+    /**
+     * @brief Retrieve an instance_description's set of requested instance extensions.
+     * @return A read-only reference to the set of requested instance extensions.
+     */
     const std::unordered_set<std::string>& requested_extensions() const;
+
+    /**
+     * @brief Retrieve an instance_description's set of required instance extensions.
+     * @return A read-only reference to the set of required instance extensions.
+     */
     const std::unordered_set<std::string>& required_extensions() const;
   };
 
+  /**
+   * @brief The implementation of a megatech::vulkan::instance.
+   */
   class instance_impl {
   public:
     using parent_type = loader_impl;
   protected:
+    /**
+     * @brief Construct an instance_impl.
+     * @details This is an inheritance only constructor that sets up the parent and validator. This should only be
+     *          invoked as part of a derived constructor.
+     * @param parent A shared_ptr to a read-only loader_impl.
+     * @param validator A unique_ptr to a read-only physical_device_validator.
+     */
     instance_impl(const std::shared_ptr<const parent_type>& parent,
                   std::unique_ptr<const physical_device_validator>&& validator);
 
