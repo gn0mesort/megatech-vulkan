@@ -29,14 +29,6 @@ namespace megatech::vulkan::adaptors::libvulkan {
     /**
      * @brief Construct an instance.
      * @param parent The parent loader object.
-     * @param requested_layers A set of requested layers that the instance should enable. Layers that are unavailable
-     *                         are ignored.
-     */
-    instance(const loader& parent, const std::unordered_set<std::string>& requested_layers);
-
-    /**
-     * @brief Construct an instance.
-     * @param parent The parent loader object.
      * @param app_description A description of the application.
      */
     instance(const loader& parent, const application_description& app_description);
@@ -76,14 +68,6 @@ namespace megatech::vulkan::adaptors::libvulkan {
     /// @cond
     debug_instance() = delete;
     /// @endcond
-
-    /**
-     * @brief Construct a debug_instance.
-     * @param parent The parent loader object.
-     * @param requested_layers A set of requested layers that the instance should enable. Layers that are unavailable
-     *                         are ignored.
-     */
-    debug_instance(const loader& parent, const std::unordered_set<std::string>& requested_layers);
 
     /**
      * @brief Construct an debug_instance.

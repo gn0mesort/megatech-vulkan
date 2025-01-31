@@ -14,12 +14,13 @@ namespace megatech::vulkan {
    */
   class application_description final {
   private:
-    class version m_version;
-    std::string m_name;
+    class version m_version{ 0, 1, 0, 0 };
+    std::string m_name{ "" } ;
   public:
-    /// @cond
-    application_description() = delete;
-    /// @endcond
+    /**
+     * @brief Construct an application_description.
+     */
+    application_description() = default;
 
     /**
      * @brief Construct an application_description.
