@@ -8,7 +8,7 @@
 #include "megatech/vulkan/version.hpp"
 
 #include "megatech/vulkan/internal/base/vulkandefs.hpp"
-#include "megatech/vulkan/internal/base/physical_device_validator.hpp"
+#include "megatech/vulkan/internal/base/physical_device_allocator.hpp"
 #include "megatech/vulkan/internal/base/instance_impl.hpp"
 #include "megatech/vulkan/internal/base/physical_device_description_impl.hpp"
 
@@ -63,23 +63,6 @@ namespace megatech::vulkan {
   physical_device_list::physical_device_list(std::vector<physical_device_description>&& filtered_list) :
   m_physical_devices{ std::move(filtered_list) } { }
 
-  bool physical_device_list::is_valid(const physical_device_description& physical_device) const {
-    const auto& impl = physical_device.implementation();
-    const auto good_version = version{ impl.properties_1_0().apiVersion } >= version{ 0, 1, 3, 0 };
-    const auto has_primary_queue = impl.primary_queue_family_index() != -1;
-    DECLARE_INSTANCE_PFN(impl.parent().dispatch_table(), vkGetPhysicalDeviceFeatures2);
-    auto features2 = VkPhysicalDeviceFeatures2{ };
-    features2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
-    auto local_read_features = VkPhysicalDeviceDynamicRenderingLocalReadFeaturesKHR{ };
-    local_read_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_LOCAL_READ_FEATURES_KHR;
-    features2.pNext = &local_read_features;
-    vkGetPhysicalDeviceFeatures2(impl.handle(), &features2);
-    const auto has_dynamic_rendering = impl.features_1_3().dynamicRendering &&
-                                       local_read_features.dynamicRenderingLocalRead &&
-                                       impl.available_extensions().contains("VK_KHR_dynamic_rendering_local_read");
-    return good_version && has_primary_queue && has_dynamic_rendering;
-  }
-
   physical_device_list::physical_device_list(const instance& inst) {
     auto parent = inst.share_implementation();
     DECLARE_INSTANCE_PFN(parent->dispatch_table(), vkEnumeratePhysicalDevices);
@@ -90,10 +73,9 @@ namespace megatech::vulkan {
     m_physical_devices.reserve(sz);
     for (auto&& handle : handles)
     {
-      using impl_type = physical_device_description::implementation_type;
-      auto ptr = new impl_type{ parent, handle };
-      auto tmp = physical_device_description{ std::shared_ptr<impl_type>{ ptr } };
-      if (tmp.implementation().is_valid())
+      using implementation_type = internal::base::physical_device_description_impl;
+      auto tmp = std::shared_ptr<implementation_type>{ parent->physical_device_allocator()(parent, handle) };
+      if (tmp->is_valid())
       {
         m_physical_devices.emplace_back(tmp);
       }

@@ -7,6 +7,6 @@
 #include "base/device_impl.hpp"
 #include "base/layer_description_proxy.hpp"
 #include "base/physical_device_description_impl.hpp"
-#include "base/physical_device_validator.hpp"
+#include "base/physical_device_allocator.hpp"
 
 #endif

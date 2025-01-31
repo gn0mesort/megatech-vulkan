@@ -9,7 +9,7 @@
 
 #include "megatech/vulkan/internal/base/vulkandefs.hpp"
 #include "megatech/vulkan/internal/base/loader_impl.hpp"
-#include "megatech/vulkan/internal/base/physical_device_validator.hpp"
+#include "megatech/vulkan/internal/base/physical_device_allocator.hpp"
 #include "megatech/vulkan/internal/base/instance_impl.hpp"
 
 #include "megatech/vulkan/adaptors/libvulkan/loader.hpp"
@@ -27,8 +27,8 @@ namespace megatech::vulkan::adaptors::libvulkan {
   mv::instance{ [](const loader& parent, const application_description& app_description,
                    const std::unordered_set<std::string>& requested_layers){
     auto description = mvib::instance_description{ requested_layers, { }, { } };
-    auto validator = std::unique_ptr<mvib::physical_device_validator>{ new mvib::physical_device_validator{ } };
-    auto ptr = new implementation_type{ parent.share_implementation(), std::move(validator), app_description,
+    auto allocator = std::unique_ptr<mvib::physical_device_allocator>{ new mvib::physical_device_allocator{ } };
+    auto ptr = new implementation_type{ parent.share_implementation(), std::move(allocator), app_description,
                                         description };
     return std::shared_ptr<implementation_type>{ ptr };
   }(parent, app_description, requested_layers) } { }
@@ -41,8 +41,8 @@ namespace megatech::vulkan::adaptors::libvulkan {
   mv::debug_instance{ [](const loader& parent, const application_description& app_description,
                          const std::unordered_set<std::string>& requested_layers) {
     auto description = mvib::instance_description{ requested_layers, { }, { "VK_EXT_debug_utils" } };
-    auto validator = std::unique_ptr<mvib::physical_device_validator>{ new mvib::physical_device_validator{ } };
-    auto ptr = new extended_implementation_type{ parent.share_implementation(), std::move(validator), app_description,
+    auto allocator = std::unique_ptr<mvib::physical_device_allocator>{ new mvib::physical_device_allocator{ } };
+    auto ptr = new extended_implementation_type{ parent.share_implementation(), std::move(allocator), app_description,
                                                  description };
     return std::shared_ptr<extended_implementation_type>{ ptr };
   }(parent, app_description, requested_layers) } { }
@@ -54,8 +54,8 @@ namespace megatech::vulkan::adaptors::libvulkan {
                          const std::unordered_set<std::string>& requested_layers,
                          const debug_messenger_description& messenger_description) {
     auto description = mvib::instance_description{ requested_layers, { }, { "VK_EXT_debug_utils" } };
-    auto validator = std::unique_ptr<mvib::physical_device_validator>{ new mvib::physical_device_validator{ } };
-    auto ptr = new extended_implementation_type{ parent.share_implementation(), std::move(validator), app_description,
+    auto allocator = std::unique_ptr<mvib::physical_device_allocator>{ new mvib::physical_device_allocator{ } };
+    auto ptr = new extended_implementation_type{ parent.share_implementation(), std::move(allocator), app_description,
                                                  messenger_description, description };
     return std::shared_ptr<extended_implementation_type>{ ptr };
   }(parent, app_description, requested_layers, messenger_description) } { }

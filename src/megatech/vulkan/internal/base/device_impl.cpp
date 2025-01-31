@@ -15,54 +15,18 @@
 
 namespace megatech::vulkan::internal::base {
 
-  device_description::device_description(const std::unordered_set<std::string>& requested_extensions,
-                                         const std::unordered_set<std::string>& required_extensions) :
-  m_requested_extensions{ requested_extensions },
-  m_required_extensions{ required_extensions } { }
-
-  const std::unordered_set<std::string>& device_description::requested_extensions() const {
-    return m_requested_extensions;
-  }
-
-  const std::unordered_set<std::string>& device_description::required_extensions() const {
-    return m_required_extensions;
-  }
-
-  device_impl::device_impl(const std::shared_ptr<const parent_type>& parent, const device_description& description) :
+  device_impl::device_impl(const std::shared_ptr<const parent_type>& parent) :
   m_parent{ parent } {
     auto device_info = VkDeviceCreateInfo{ };
     device_info.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-    m_enabled_extensions.insert("VK_KHR_dynamic_rendering_local_read");
-    for (const auto& extension : description.required_extensions())
-    {
-      m_enabled_extensions.insert(extension);
-    }
-    for (const auto& extension : description.requested_extensions())
-    {
-      if (m_parent->available_extensions().contains(extension))
-      {
-        m_enabled_extensions.insert(extension);
-      }
-    }
     auto enabled_extensions = std::vector<const char*>{ };
-    for (const auto& extension : m_enabled_extensions)
+    for (const auto& extension : m_parent->required_extensions())
     {
       enabled_extensions.emplace_back(extension.data());
     }
     device_info.enabledExtensionCount = enabled_extensions.size();
     device_info.ppEnabledExtensionNames = enabled_extensions.data();
-    auto features = VkPhysicalDeviceFeatures2{ };
-    features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
-    auto features_1_3 = VkPhysicalDeviceVulkan13Features{ };
-    features_1_3.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES;
-    features_1_3.dynamicRendering = VK_TRUE;
-    auto features_dynamic_rendering_local_read = VkPhysicalDeviceDynamicRenderingLocalReadFeaturesKHR{ };
-    features_dynamic_rendering_local_read.sType =
-      VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_LOCAL_READ_FEATURES_KHR;
-    features.pNext = &features_1_3;
-    features_dynamic_rendering_local_read.dynamicRenderingLocalRead = VK_TRUE;
-    features_1_3.pNext = &features_dynamic_rendering_local_read;
-    device_info.pNext = &features;
+    device_info.pNext = &m_parent->required_features();
     const auto priority = 1.0f;
     auto queue_infos = std::vector<VkDeviceQueueCreateInfo>(3);
     for (auto& queue_info : queue_infos)
@@ -113,7 +77,7 @@ namespace megatech::vulkan::internal::base {
   }
 
   const std::unordered_set<std::string>& device_impl::enabled_extensions() const {
-    return m_enabled_extensions;
+    return m_parent->required_extensions();
   }
 
 }

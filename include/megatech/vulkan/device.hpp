@@ -13,6 +13,8 @@ namespace megatech::vulkan::internal::base {
 
 namespace megatech::vulkan {
 
+  class physical_device_description;
+
   /**
    * @brief A Vulkan device.
    * @details Devices are fully functional Vulkan-capable hardware that are ready to accept commands. It is possible
@@ -22,12 +24,19 @@ namespace megatech::vulkan {
   public:
     using implementation_type = internal::base::device_impl;
   protected:
-    explicit device(const std::shared_ptr<implementation_type>& impl);
-
     std::shared_ptr<implementation_type> m_impl{ };
   public:
     /// @cond
     device() = delete;
+    /// @endcond
+
+    /**
+     * @brief Construct a device.
+     * @param parent A physical_device_description describing the device to construct.
+     */
+    explicit device(const physical_device_description& parent);
+
+    /// @cond
     device(const device& other) = delete;
     device(device&& other) = delete;
     /// @endcond

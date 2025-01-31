@@ -9,10 +9,10 @@ using megatech::vulkan::bitmask;
 using megatech::vulkan::version;
 using megatech::vulkan::debug_messenger_description;
 using megatech::vulkan::physical_device_list;
+using megatech::vulkan::device;
 
 using megatech::vulkan::adaptors::libvulkan::loader;
 using megatech::vulkan::adaptors::libvulkan::debug_instance;
-using megatech::vulkan::adaptors::libvulkan::device;
 
 TEST_CASE("Devices should be initializable.", "[device][adaptor-libvulkan]") {
   auto ldr = loader{ };

@@ -39,6 +39,6 @@ int main() {
   {
     return 1;
   }
-  auto dev = mval::device{ physical_devices.front() };
+  auto dev = mv::device{ physical_devices.front() };
   return 0;
 }

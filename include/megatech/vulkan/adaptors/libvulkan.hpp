@@ -10,6 +10,5 @@
 
 #include "libvulkan/loader.hpp"
 #include "libvulkan/instance.hpp"
-#include "libvulkan/device.hpp"
 
 #endif

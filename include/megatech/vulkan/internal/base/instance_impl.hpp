@@ -17,18 +17,17 @@
 #include "../../concepts/handle_owner.hpp"
 
 #include "vulkandefs.hpp"
+#include "physical_device_allocator.hpp"
 
 namespace megatech::vulkan {
 
   class application_description;
-  class physical_device_description;
 
 }
 
 namespace megatech::vulkan::internal::base {
 
   class loader_impl;
-  class physical_device_validator;
 
   /**
    * @brief A desctiption of a Vulkan instance.
@@ -120,13 +119,13 @@ namespace megatech::vulkan::internal::base {
      * @details This is an inheritance only constructor that sets up the parent and validator. This should only be
      *          invoked as part of a derived constructor.
      * @param parent A shared_ptr to a read-only loader_impl.
-     * @param validator A unique_ptr to a read-only physical_device_validator.
+     * @param allocator A unique_ptr to a read-only physical_device_allocator.
      */
     instance_impl(const std::shared_ptr<const parent_type>& parent,
-                  std::unique_ptr<const physical_device_validator>&& validator);
+                  std::unique_ptr<const class physical_device_allocator>&& allocator);
 
     std::unique_ptr<dispatch::instance::table> m_idt{ };
-    std::unique_ptr<const physical_device_validator> m_validator{ };
+    std::unique_ptr<const class physical_device_allocator> m_physical_device_allocator{ };
     std::shared_ptr<const parent_type> m_parent{ };
     VkInstance m_instance{ VK_NULL_HANDLE };
     std::unordered_set<std::string> m_enabled_layers{ };
@@ -136,7 +135,7 @@ namespace megatech::vulkan::internal::base {
 
     instance_impl() = delete;
     instance_impl(const std::shared_ptr<const parent_type>& parent,
-                  std::unique_ptr<const physical_device_validator>&& validator,
+                  std::unique_ptr<const class physical_device_allocator>&& allocator,
                   const application_description& app_description,
                   const instance_description& description);
     instance_impl(const instance_impl& other) = delete;
@@ -147,7 +146,7 @@ namespace megatech::vulkan::internal::base {
     instance_impl& operator=(const instance_impl& rhs) = delete;
     instance_impl& operator=(instance_impl&& rhs) = delete;
 
-    const physical_device_validator& validator() const;
+    const class physical_device_allocator& physical_device_allocator() const;
 
     const dispatch::instance::table& dispatch_table() const;
     handle_type handle() const;
@@ -165,11 +164,11 @@ namespace megatech::vulkan::internal::base {
   public:
     debug_instance_impl() = delete;
     debug_instance_impl(const std::shared_ptr<const parent_type>& parent,
-                        std::unique_ptr<const physical_device_validator>&&,
+                        std::unique_ptr<const class physical_device_allocator>&&,
                         const application_description& app_description,
                         const instance_description& description);
     debug_instance_impl(const std::shared_ptr<const parent_type>& parent,
-                        std::unique_ptr<const physical_device_validator>&&,
+                        std::unique_ptr<const class physical_device_allocator>&&,
                         const application_description& app_description,
                         const debug_messenger_description& messenger_description,
                         const instance_description& description);

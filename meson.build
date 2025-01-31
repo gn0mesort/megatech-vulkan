@@ -63,7 +63,7 @@ sources = [
   files('src/megatech/vulkan/internal/base/loader_impl.cpp',
         'src/megatech/vulkan/internal/base/instance_impl.cpp',
         'src/megatech/vulkan/internal/base/physical_device_description_impl.cpp',
-        'src/megatech/vulkan/internal/base/physical_device_validator.cpp',
+        'src/megatech/vulkan/internal/base/physical_device_allocator.cpp',
         'src/megatech/vulkan/internal/base/device_impl.cpp'),
   configure_file(input: 'generated/include/config.hpp.in', output: '@BASENAME@', configuration: config)
 ]
@@ -76,8 +76,7 @@ dependencies = [
   megatech_vulkan_dep
 ]
 sources = [
-  files('src/megatech/vulkan/adaptors/libvulkan/loader.cpp', 'src/megatech/vulkan/adaptors/libvulkan/instance.cpp',
-        'src/megatech/vulkan/adaptors/libvulkan/device.cpp')
+  files('src/megatech/vulkan/adaptors/libvulkan/loader.cpp', 'src/megatech/vulkan/adaptors/libvulkan/instance.cpp')
 ]
 megatech_vulkan_adaptor_libvulkan_lib = library('@0@-adaptor-@1@'.format(meson.project_name(), 'libvulkan'), sources,
                                                 include_directories: includes, dependencies: dependencies,

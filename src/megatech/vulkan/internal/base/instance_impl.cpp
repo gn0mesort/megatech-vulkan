@@ -7,7 +7,6 @@
 
 #include "megatech/vulkan/application_description.hpp"
 
-#include "megatech/vulkan/internal/base/physical_device_validator.hpp"
 #include "megatech/vulkan/internal/base/loader_impl.hpp"
 
 #define DECLARE_GLOBAL_PFN(dt, cmd) MEGATECH_VULKAN_INTERNAL_BASE_DECLARE_GLOBAL_PFN(dt, cmd)
@@ -58,15 +57,15 @@ namespace megatech::vulkan::internal::base {
   }
 
   instance_impl::instance_impl(const std::shared_ptr<const loader_impl>& parent,
-                               std::unique_ptr<const physical_device_validator>&& validator) :
-  m_validator{ std::move(validator) },
+                               std::unique_ptr<const class physical_device_allocator>&& allocator) :
+  m_physical_device_allocator{ std::move(allocator) },
   m_parent{ parent } { }
 
   instance_impl::instance_impl(const std::shared_ptr<const loader_impl>& parent,
-                               std::unique_ptr<const physical_device_validator>&& validator,
+                               std::unique_ptr<const class physical_device_allocator>&& allocator,
                                const application_description& app_description,
                                const instance_description& description) :
-  m_validator{ std::move(validator) },
+  m_physical_device_allocator{ std::move(allocator) },
   m_parent{ parent } {
     {
       DECLARE_GLOBAL_PFN_NO_THROW(parent->dispatch_table(), vkEnumerateInstanceVersion);
@@ -142,8 +141,8 @@ namespace megatech::vulkan::internal::base {
     }
   }
 
-  const physical_device_validator& instance_impl::validator() const {
-    return *m_validator;
+  const class physical_device_allocator& instance_impl::physical_device_allocator() const {
+    return *m_physical_device_allocator;
   }
 
   const dispatch::instance::table& instance_impl::dispatch_table() const {
@@ -167,17 +166,17 @@ namespace megatech::vulkan::internal::base {
   }
 
   debug_instance_impl::debug_instance_impl(const std::shared_ptr<const parent_type>& parent,
-                                           std::unique_ptr<const physical_device_validator>&& validator,
+                                           std::unique_ptr<const class physical_device_allocator>&& allocator,
                                            const application_description& app_description,
                                            const instance_description& description) :
-  instance_impl{ parent, std::move(validator), app_description, description } { }
+  instance_impl{ parent, std::move(allocator), app_description, description } { }
 
   debug_instance_impl::debug_instance_impl(const std::shared_ptr<const parent_type>& parent,
-                                           std::unique_ptr<const physical_device_validator>&& validator,
+                                           std::unique_ptr<const class physical_device_allocator>&& allocator,
                                            const application_description& app_description,
                                            const debug_messenger_description& messenger_description,
                                            const instance_description& description) :
-  instance_impl{ parent, std::move(validator) },
+  instance_impl{ parent, std::move(allocator) },
   m_message_sink{ messenger_description.sink() } {
     {
       DECLARE_GLOBAL_PFN_NO_THROW(parent->dispatch_table(), vkEnumerateInstanceVersion);

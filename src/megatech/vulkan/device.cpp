@@ -2,12 +2,14 @@
 
 #include <utility>
 
+#include "megatech/vulkan/physical_devices.hpp"
+
 #include "megatech/vulkan/internal/base/device_impl.hpp"
 
 namespace megatech::vulkan {
 
-  device::device(const std::shared_ptr<implementation_type>& impl) :
-  m_impl{ impl } { }
+  device::device(const physical_device_description& parent) :
+  m_impl{ new implementation_type{ parent.share_implementation() } } { }
 
   device::implementation_type& device::implementation() {
     return *m_impl;
