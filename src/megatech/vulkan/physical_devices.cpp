@@ -93,7 +93,7 @@ namespace megatech::vulkan {
       using impl_type = physical_device_description::implementation_type;
       auto ptr = new impl_type{ parent, handle };
       auto tmp = physical_device_description{ std::shared_ptr<impl_type>{ ptr } };
-      if (parent->validator()(tmp))
+      if (tmp.implementation().is_valid())
       {
         m_physical_devices.emplace_back(tmp);
       }

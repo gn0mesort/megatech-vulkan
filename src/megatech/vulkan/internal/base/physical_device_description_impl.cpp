@@ -1,12 +1,163 @@
 #include "megatech/vulkan/internal/base/physical_device_description_impl.hpp"
 
+#include <cstring>
+
+#include <bit>
+#include <algorithm>
+#include <type_traits>
+
+#include "config.hpp"
+
 #include "megatech/vulkan/internal/base/vulkandefs.hpp"
 #include "megatech/vulkan/internal/base/instance_impl.hpp"
 
 #define DECLARE_INSTANCE_PFN(dt, cmd) MEGATECH_VULKAN_INTERNAL_BASE_DECLARE_INSTANCE_PFN(dt, cmd)
 #define VK_CHECK(exp) MEGATECH_VULKAN_INTERNAL_BASE_VK_CHECK(exp)
 
+// Allegedly, Microsoft ignores [[no_unique_address]], even in C++20 mode. The MSVC specific attribute shouldn't be
+// ignored.
+#ifdef CONFIG_COMPILER_MSVC
+  #define NO_UNIQUE_ADDRESS_ATTR [[msvc::no_unique_address]]
+#else
+  #define NO_UNIQUE_ADDRESS_ATTR [[no_unique_address]]
+#endif
+
+// All of this stuff is so that I can safely compare and merge Vulkan features in a way that isn't disastrously
+// unmaintainable. It is, merely, sort of unmaintainable.
+namespace {
+
+  template <typename Type>
+  concept vk_extended_feature_type = requires (Type&& t) {
+    alignof(Type) >= sizeof(VkBool32);
+    { t.sType } -> std::convertible_to<VkStructureType>;
+    { t.pNext } -> std::convertible_to<void*>;
+  };
+
+  template <std::size_t Padding>
+  struct padding final {
+    char pad[Padding];
+  };
+
+  struct empty final { };
+
+  template <vk_extended_feature_type Type>
+  struct padded_feature final {
+    VkBool32 value;
+
+    // This is required to ensure that pad is 0 when sizeof(void*) <= 4.
+    NO_UNIQUE_ADDRESS_ATTR
+    std::conditional_t<(alignof(Type) > sizeof(VkBool32)), padding<alignof(Type) - sizeof(VkBool32)>, empty> pad;
+  };
+
+  template <vk_extended_feature_type Type>
+  constexpr std::size_t feature_count() {
+    return (sizeof(Type) - (alignof(Type) << 1)) / sizeof(padded_feature<Type>);
+  }
+
+  template <vk_extended_feature_type Type>
+  struct extended_feature_array final {
+    VkStructureType sType;
+    void* pNext;
+    padded_feature<Type> elements[feature_count<Type>()];
+  };
+
+  struct basic_feature_array final {
+    VkBool32 elements[sizeof(VkPhysicalDeviceFeatures) / sizeof(VkBool32)];
+  };
+
+  // featurecmp works by converting VkPhysicalDevice*Features* into an array-esque type and then doing the
+  // comparison iteratively. If a feature is enabled in required but not enabled in actual the test fails.
+  template <vk_extended_feature_type Feature>
+  bool featurecmp(const Feature& actual, const Feature& required) {
+    const auto a_arr = std::bit_cast<extended_feature_array<Feature>>(actual);
+    const auto r_arr = std::bit_cast<extended_feature_array<Feature>>(required);
+    for (auto i = std::size_t{ 0 }; i < feature_count<Feature>(); ++i)
+    {
+      if (r_arr.elements[i].value && !a_arr.elements[i].value)
+      {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  bool featurecmp(const VkPhysicalDeviceFeatures& actual, const VkPhysicalDeviceFeatures& required) {
+    const auto a_arr = std::bit_cast<basic_feature_array>(actual);
+    const auto r_arr = std::bit_cast<basic_feature_array>(required);
+    for (auto i = std::size_t{ 0 }; i < (sizeof(VkPhysicalDeviceFeatures) / sizeof(VkBool32)); ++i)
+    {
+      if (r_arr.elements[i] && !a_arr.elements[i])
+      {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  // This is similar to featurecmp. Instead of comparing though we merge two sets of features iteratively.
+  template <vk_extended_feature_type Feature>
+  Feature featuremerge(const Feature& a, const Feature& b) {
+    auto a_arr = std::bit_cast<extended_feature_array<Feature>>(a);
+    const auto b_arr = std::bit_cast<extended_feature_array<Feature>>(b);
+    for (auto i = std::size_t{ 0 }; i < feature_count<Feature>(); ++i) {
+      a_arr.elements[i].value = a_arr.elements[i].value || b_arr.elements[i].value;
+    }
+    return std::bit_cast<Feature>(a_arr);
+  }
+
+  VkPhysicalDeviceFeatures featuremerge(const VkPhysicalDeviceFeatures& a, const VkPhysicalDeviceFeatures& b) {
+    auto a_arr = std::bit_cast<basic_feature_array>(a);
+    const auto b_arr = std::bit_cast<basic_feature_array>(b);
+    for (auto i = std::size_t{ 0 }; i < (sizeof(VkPhysicalDeviceFeatures) / sizeof(VkBool32)); ++i) {
+      a_arr.elements[i] = a_arr.elements[i] || b_arr.elements[i];
+    }
+    return std::bit_cast<VkPhysicalDeviceFeatures>(a_arr);
+  }
+
+}
+
 namespace megatech::vulkan::internal::base {
+
+  void physical_device_description_impl::set_queue_families(const std::int64_t primary, const std::int64_t compute,
+                                                            const std::int64_t transfer) {
+    if (primary > static_cast<std::int64_t>(m_queue_family_properties.size()) ||
+        compute > static_cast<std::int64_t>(m_queue_family_properties.size()) ||
+        transfer > static_cast<std::int64_t>(m_queue_family_properties.size()))
+    {
+      throw error{ "You cannot assign a queue family index that is out of range." };
+    }
+    m_primary_queue_family = primary;
+    m_async_compute_queue_family = compute;
+    m_async_transfer_queue_family = transfer;
+  }
+
+  void physical_device_description_impl::add_required_extension(const std::string& extension) {
+    m_required_extensions.insert(extension);
+  }
+
+  void physical_device_description_impl::require_1_0_features(const VkPhysicalDeviceFeatures& features) {
+    m_required_features.features = featuremerge(features, m_required_features.features);
+  }
+
+  void physical_device_description_impl::require_1_1_features(const VkPhysicalDeviceVulkan11Features& features) {
+    m_required_features_1_1 = featuremerge(features, m_required_features_1_1);
+  }
+
+  void physical_device_description_impl::require_1_2_features(const VkPhysicalDeviceVulkan12Features& features) {
+    m_required_features_1_2 = featuremerge(features, m_required_features_1_2);
+  }
+
+  void physical_device_description_impl::require_1_3_features(const VkPhysicalDeviceVulkan13Features& features) {
+    m_required_features_1_3 = featuremerge(features, m_required_features_1_3);
+  }
+
+  void physical_device_description_impl::append_extended_feature_chain(void *const next) {
+    m_dynamic_rendering_local_read_features.pNext = next;
+  }
+
+  bool physical_device_description_impl::has_extended_features() const {
+    return true;
+  }
 
   physical_device_description_impl::physical_device_description_impl(std::shared_ptr<const instance_impl> parent,
                                                                      VkPhysicalDevice handle) :
@@ -45,6 +196,19 @@ namespace megatech::vulkan::internal::base {
     m_features_1_2.pNext = nullptr;
     m_features_1_1.pNext = nullptr;
     m_features_1_0 = features2.features;
+    m_required_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
+    m_required_features.pNext = &m_required_features_1_1;
+    m_required_features_1_1.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_FEATURES;
+    m_required_features_1_1.pNext = &m_required_features_1_2;
+    m_required_features_1_2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES;
+    m_required_features_1_2.pNext = &m_required_features_1_3;
+    m_required_features_1_3.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES;
+    m_required_features_1_3.pNext = &m_required_dynamic_rendering_local_read_features;
+    m_required_features_1_3.dynamicRendering = VK_TRUE;
+    m_required_dynamic_rendering_local_read_features.sType =
+      VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_LOCAL_READ_FEATURES_KHR;
+    m_required_dynamic_rendering_local_read_features.pNext = nullptr;
+    m_required_dynamic_rendering_local_read_features.dynamicRenderingLocalRead = true;
     DECLARE_INSTANCE_PFN(m_parent->dispatch_table(), vkEnumerateDeviceExtensionProperties);
     {
       auto sz = std::uint32_t{ 0 };
@@ -216,13 +380,29 @@ namespace megatech::vulkan::internal::base {
     return m_queue_family_properties[m_async_transfer_queue_family];
   }
 
-  bool physical_device_description_impl::has_dynamic_rendering() const {
-    return m_features_1_3.dynamicRendering;
+  bool physical_device_description_impl::is_valid() const {
+    auto has_extensions = true;
+    for (const auto& extension : m_required_extensions)
+    {
+      has_extensions = has_extensions && m_available_extensions.contains(extension);
+    }
+    return m_primary_queue_family != -1 &&
+           has_extensions &&
+           version{ m_properties_1_0.apiVersion } >= MINIMUM_VULKAN_VERSION &&
+           featurecmp(m_features_1_0, m_required_features.features) &&
+           featurecmp(m_features_1_1, m_required_features_1_1) &&
+           featurecmp(m_features_1_2, m_required_features_1_2) &&
+           featurecmp(m_features_1_3, m_required_features_1_3) &&
+           featurecmp(m_dynamic_rendering_local_read_features, m_required_dynamic_rendering_local_read_features) &&
+           has_extended_features();
   }
 
-  bool physical_device_description_impl::has_dynamic_rendering_local_read() const {
-    return m_available_extensions.contains("VK_KHR_dynamic_rendering_local_read") &&
-           m_dynamic_rendering_local_read_features.dynamicRenderingLocalRead;
+  const std::unordered_set<std::string>& physical_device_description_impl::required_extensions() const {
+    return m_required_extensions;
+  }
+
+  const VkPhysicalDeviceFeatures2& physical_device_description_impl::required_features() const {
+    return m_required_features;
   }
 
 }
