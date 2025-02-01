@@ -1,7 +1,2 @@
 Diagnostics:
   UnusedIncludes: None
----
-If:
-  PathMatch: [ .*\.h, .*\.hpp, .*\.inl, .*\.h\.in, .*\.hpp\.in, .*\.inl\.in ]
-CompileFlags:
-  Add: [ -DMEGATECH_VULKAN_INCLUDE_VULKAN_H=1 ]
