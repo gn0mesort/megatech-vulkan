@@ -1,0 +1,18 @@
+/**
+ * @namespace megatech
+ * @brief Megatech Classes and Utilities
+ */
+/**
+ * @namespace megatech::vulkan
+ * @brief Vulkan Classes and Utilities
+ */
+/// @cond INTERNAL
+/**
+ * @namespace megatech::vulkan::internal
+ * @brief Internal Functionality
+ */
+/**
+ * @namespace megatech::vulkan::internal::base
+ * @brief Cross-Platform Internal Functionality
+ */
+/// @endcond

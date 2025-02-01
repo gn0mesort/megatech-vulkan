@@ -1,3 +1,11 @@
+/// @cond INTERNAL
+/**
+ * @file physical_device_allocator.cpp
+ * @brief Indirect Physical Device Object Allocator
+ * @author Alexander Rothman <[gnomesort@megate.ch](mailto:gnomesort@megate.ch)>
+ * @copyright AGPL-3.0-or-later
+ * @date 2025
+ */
 #include "megatech/vulkan/internal/base/physical_device_allocator.hpp"
 
 #include <megatech/assertions.hpp>
@@ -20,5 +28,5 @@ namespace megatech::vulkan::internal::base {
     return allocate(parent, handle);
   }
 
-
 }
+/// @endcond

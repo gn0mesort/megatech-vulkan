@@ -1,3 +1,10 @@
+/**
+ * @file child_object.hpp
+ * @brief Child Objects
+ * @author Alexander Rothman <[gnomesort@megate.ch](mailto:gnomesort@megate.ch)>
+ * @copyright AGPL-3.0-or-later
+ * @date 2025
+ */
 #ifndef MEGATECH_VULKAN_CONCEPTS_CHILD_OBJECT_HPP
 #define MEGATECH_VULKAN_CONCEPTS_CHILD_OBJECT_HPP
 

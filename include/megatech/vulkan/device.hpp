@@ -1,3 +1,10 @@
+/**
+ * @file device.hpp
+ * @brief Vulkan Devices
+ * @author Alexander Rothman <[gnomesort@megate.ch](mailto:gnomesort@megate.ch)>
+ * @copyright AGPL-3.0-or-later
+ * @date 2025
+ */
 #ifndef MEGATECH_VULKAN_DEVICE_HPP
 #define MEGATECH_VULKAN_DEVICE_HPP
 
@@ -22,8 +29,11 @@ namespace megatech::vulkan {
    */
   class device {
   public:
+    /**
+     * @brief The internal implementation type of the device.
+     */
     using implementation_type = internal::base::device_impl;
-  protected:
+  private:
     std::shared_ptr<implementation_type> m_impl{ };
   public:
     /// @cond

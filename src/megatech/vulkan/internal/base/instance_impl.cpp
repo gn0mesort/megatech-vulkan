@@ -1,3 +1,11 @@
+/// @cond INTERNAL
+/**
+ * @file instance_impl.cpp
+ * @brief Instance Implementation
+ * @author Alexander Rothman <[gnomesort@megate.ch](mailto:gnomesort@megate.ch)>
+ * @copyright AGPL-3.0-or-later
+ * @date 2025
+ */
 #include "megatech/vulkan/internal/base/instance_impl.hpp"
 
 #include <bit>
@@ -328,3 +336,4 @@ namespace megatech::vulkan::internal::base {
   }
 
 }
+/// @endcond

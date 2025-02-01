@@ -1,4 +1,11 @@
 /// @cond INTERNAL
+/**
+ * @file instance_impl.hpp
+ * @brief Instance Implementation
+ * @author Alexander Rothman <[gnomesort@megate.ch](mailto:gnomesort@megate.ch)>
+ * @copyright AGPL-3.0-or-later
+ * @date 2025
+ */
 #ifndef MEGATECH_VULKAN_INTERNAL_BASE_INSTANCE_IMPL_HPP
 #define MEGATECH_VULKAN_INTERNAL_BASE_INSTANCE_IMPL_HPP
 
@@ -79,14 +86,14 @@ namespace megatech::vulkan::internal::base {
      * @param rhs The instance_description to copy.
      * @return A reference to the copied-to instance_description.
      */
-    instance_description& operator=(const instance_description& other) = default;
+    instance_description& operator=(const instance_description& rhs) = default;
 
     /**
      * @brief Move-assign an instance_description.
      * @param rhs The instance_description to move.
      * @return A reference to the moved-to instance_description.
      */
-    instance_description& operator=(instance_description&& other) = default;
+    instance_description& operator=(instance_description&& rhs) = default;
 
     /**
      * @brief Retrieve an instance_description's set of requested layers.
@@ -112,6 +119,9 @@ namespace megatech::vulkan::internal::base {
    */
   class instance_impl {
   public:
+    /**
+     * @brief The parent object type that must be used to initialize an instance_impl.
+     */
     using parent_type = loader_impl;
   protected:
     /**
@@ -127,12 +137,17 @@ namespace megatech::vulkan::internal::base {
     instance_impl(const std::shared_ptr<const parent_type>& parent,
                   std::unique_ptr<const class physical_device_allocator>&& allocator);
 
+    /// @cond
     std::unique_ptr<dispatch::instance::table> m_idt{ };
     std::unique_ptr<const class physical_device_allocator> m_physical_device_allocator{ };
     std::shared_ptr<const parent_type> m_parent{ };
     std::unordered_set<std::string> m_enabled_layers{ };
     std::unordered_set<std::string> m_enabled_extensions{ };
+    /// @endcond
   public:
+    /**
+     * @brief The type of an instance_impl's owned Vulkan handle.
+     */
     using handle_type = VkInstance;
 
     /// @cond
@@ -210,7 +225,7 @@ namespace megatech::vulkan::internal::base {
    * @brief The implementation of a megatech::vulkan::debug_instance.
    */
   class debug_instance_impl final : public instance_impl {
-  protected:
+  private:
     VkDebugUtilsMessengerEXT m_debug_utils_messenger{ VK_NULL_HANDLE };
     std::function<debug_messenger_description::message_sink_fn> m_message_sink{ };
   public:
@@ -229,7 +244,7 @@ namespace megatech::vulkan::internal::base {
      * @param description A description of the instance layers and extensions to enable.
      */
     debug_instance_impl(const std::shared_ptr<const parent_type>& parent,
-                        std::unique_ptr<const class physical_device_allocator>&&,
+                        std::unique_ptr<const class physical_device_allocator>&& allocator,
                         const application_description& app_description,
                         const instance_description& description);
 
@@ -247,7 +262,7 @@ namespace megatech::vulkan::internal::base {
      * @param description A description of the instance layers and extensions to enable.
      */
     debug_instance_impl(const std::shared_ptr<const parent_type>& parent,
-                        std::unique_ptr<const class physical_device_allocator>&&,
+                        std::unique_ptr<const class physical_device_allocator>&& allocator,
                         const application_description& app_description,
                         const debug_messenger_description& messenger_description,
                         const instance_description& description);
@@ -282,3 +297,4 @@ namespace megatech::vulkan::internal::base {
 }
 
 #endif
+/// @endcond

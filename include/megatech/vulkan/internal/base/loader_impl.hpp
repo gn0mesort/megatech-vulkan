@@ -1,4 +1,11 @@
 /// @cond INTERNAL
+/**
+ * @file loader_impl.hpp
+ * @brief Loader Implementation
+ * @author Alexander Rothman <[gnomesort@megate.ch](mailto:gnomesort@megate.ch)>
+ * @copyright AGPL-3.0-or-later
+ * @date 2025
+ */
 #ifndef MEGATECH_VULKAN_INTERNAL_BASE_LOADER_IMPL_HPP
 #define MEGATECH_VULKAN_INTERNAL_BASE_LOADER_IMPL_HPP
 

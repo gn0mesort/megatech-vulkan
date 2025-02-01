@@ -1,3 +1,10 @@
+/**
+ * @file application_description.hpp
+ * @brief Client Application Descriptions
+ * @author Alexander Rothman <[gnomesort@megate.ch](mailto:gnomesort@megate.ch)>
+ * @copyright AGPL-3.0-or-later
+ * @date 2025
+ */
 #ifndef MEGATECH_VULKAN_APPLICATION_DESCRIPTION_HPP
 #define MEGATECH_VULKAN_APPLICATION_DESCRIPTION_HPP
 
@@ -25,7 +32,7 @@ namespace megatech::vulkan {
     /**
      * @brief Construct an application_description.
      * @param name The application's name.
-     * @param version The application's version.
+     * @param ver The application's version.
      */
     application_description(const std::string& name, const class version& ver);
 

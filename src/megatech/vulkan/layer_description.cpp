@@ -1,3 +1,10 @@
+/**
+ * @file layer_description.cpp
+ * @brief Vulkan Layer Descriptions
+ * @author Alexander Rothman <[gnomesort@megate.ch](mailto:gnomesort@megate.ch)>
+ * @copyright AGPL-3.0-or-later
+ * @date 2025
+ */
 #include "megatech/vulkan/layer_description.hpp"
 
 #include "megatech/vulkan/internal/base/layer_description_proxy.hpp"
@@ -29,8 +36,8 @@ namespace megatech::vulkan {
     return m_name == rhs.m_name;
   }
 
-  bool layer_description::operator==(const std::string& name) const {
-    return m_name == name;
+  bool layer_description::operator==(const std::string& rhs) const {
+    return m_name == rhs;
   }
 
 }

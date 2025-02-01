@@ -1,3 +1,10 @@
+/**
+ * @file loader.hpp
+ * @brief Vulkan Loaders
+ * @author Alexander Rothman <[gnomesort@megate.ch](mailto:gnomesort@megate.ch)>
+ * @copyright AGPL-3.0-or-later
+ * @date 2025
+ */
 #ifndef MEGATECH_VULKAN_LOADER_HPP
 #define MEGATECH_VULKAN_LOADER_HPP
 
@@ -24,10 +31,18 @@ namespace megatech::vulkan {
    */
   class loader {
   public:
+    /**
+     * @brief The internal implementation type of the loader.
+     */
     using implementation_type = internal::base::loader_impl;
   private:
     std::shared_ptr<implementation_type> m_impl;
   protected:
+    /**
+     * @brief Construct a loader.
+     * @details This is an inheriting constructor.
+     * @param impl A shared_ptr pointer to the implementation. This must not be null.
+     */
     explicit loader(const std::shared_ptr<implementation_type>& impl);
   public:
     /// @cond

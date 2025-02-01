@@ -1,4 +1,11 @@
 /// @cond INTERNAL
+/**
+ * @file physical_device_allocator.hpp
+ * @brief Indirect Physical Device Object Allocator
+ * @author Alexander Rothman <[gnomesort@megate.ch](mailto:gnomesort@megate.ch)>
+ * @copyright AGPL-3.0-or-later
+ * @date 2025
+ */
 #ifndef MEGATECH_VULKAN_INTERNAL_BASE_PHYSICAL_DEVICE_ALLOCATOR_HPP
 #define MEGATECH_VULKAN_INTERNAL_BASE_PHYSICAL_DEVICE_ALLOCATOR_HPP
 
@@ -19,8 +26,19 @@ namespace megatech::vulkan::internal::base {
    */
   class physical_device_allocator {
   public:
+    /**
+     * @brief The type of Vulkan handle required to allocate a physical_device_description_impl.
+     */
     using handle_type = VkPhysicalDevice;
+
+    /**
+     * @brief The type of parent object required to allocate a physical_device_description_impl.
+     */
     using parent_type = instance_impl;
+
+    /**
+     * @brief The type of object allocated by the physical_device_allocator.
+     */
     using result_type = physical_device_description_impl;
 
     /**

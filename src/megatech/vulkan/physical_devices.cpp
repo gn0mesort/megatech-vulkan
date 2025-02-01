@@ -1,3 +1,10 @@
+/**
+ * @file physical_devices.cpp
+ * @brief Vulkan Physical Devices
+ * @author Alexander Rothman <[gnomesort@megate.ch](mailto:gnomesort@megate.ch)>
+ * @copyright AGPL-3.0-or-later
+ * @date 2025
+ */
 #include "megatech/vulkan/physical_devices.hpp"
 
 #include <cinttypes>

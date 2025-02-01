@@ -1,3 +1,10 @@
+/**
+ * @file instance.cpp
+ * @brief Vulkan Instances
+ * @author Alexander Rothman <[gnomesort@megate.ch](mailto:gnomesort@megate.ch)>
+ * @copyright AGPL-3.0-or-later
+ * @date 2025
+ */
 #include "megatech/vulkan/instance.hpp"
 
 #include <utility>

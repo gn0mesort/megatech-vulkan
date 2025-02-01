@@ -1,3 +1,11 @@
+/// @cond INTERNAL
+/**
+ * @file physical_device_description_impl.cpp
+ * @brief Physical Device Description Implementation
+ * @author Alexander Rothman <[gnomesort@megate.ch](mailto:gnomesort@megate.ch)>
+ * @copyright AGPL-3.0-or-later
+ * @date 2025
+ */
 #include "megatech/vulkan/internal/base/physical_device_description_impl.hpp"
 
 #include <cstring>
@@ -472,3 +480,4 @@ namespace megatech::vulkan::internal::base {
   }
 
 }
+/// @endcond

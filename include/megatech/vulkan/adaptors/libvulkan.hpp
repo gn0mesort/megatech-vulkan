@@ -1,6 +1,6 @@
 /**
  * @file libvulkan.hpp
- * @brief Standard Vulkan Loader Plugin
+ * @brief Standard Vulkan Loader Adaptor
  * @author Alexander Rothman <[gnomesort@megate.ch](mailto:gnomesort@megate.ch)>
  * @copyright AGPL-3.0-or-later
  * @date 2024

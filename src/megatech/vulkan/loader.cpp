@@ -1,3 +1,10 @@
+/**
+ * @file loader.cpp
+ * @brief Vulkan Loaders
+ * @author Alexander Rothman <[gnomesort@megate.ch](mailto:gnomesort@megate.ch)>
+ * @copyright AGPL-3.0-or-later
+ * @date 2025
+ */
 #include "megatech/vulkan/loader.hpp"
 
 #include <megatech/assertions.hpp>

@@ -1,3 +1,10 @@
+/**
+ * @file version.hpp
+ * @brief Vulkan Compatible Version Numbers
+ * @author Alexander Rothman <[gnomesort@megate.ch](mailto:gnomesort@megate.ch)>
+ * @copyright AGPL-3.0-or-later
+ * @date 2025
+ */
 #ifndef MEGATECH_VULKAN_VERSION_HPP
 #define MEGATECH_VULKAN_VERSION_HPP
 

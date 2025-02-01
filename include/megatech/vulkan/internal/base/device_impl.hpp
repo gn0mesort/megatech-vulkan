@@ -1,4 +1,11 @@
 /// @cond INTERNAL
+/**
+ * @file device_impl.hpp
+ * @brief Device Implementation
+ * @author Alexander Rothman <[gnomesort@megate.ch](mailto:gnomesort@megate.ch)>
+ * @copyright AGPL-3.0-or-later
+ * @date 2025
+ */
 #ifndef MEGATECH_VULKAN_INTERNAL_BASE_DEVICE_IMPL_HPP
 #define MEGATECH_VULKAN_INTERNAL_BASE_DEVICE_IMPL_HPP
 
@@ -18,13 +25,19 @@ namespace megatech::vulkan::internal::base {
 
   class physical_device_description_impl;
 
-
   /**
    * @brief The implementation of a megatech::vulkan::device.
    */
   class device_impl final {
   public:
+    /**
+     * @brief The type of Vulkan handle owned by a device_impl.
+     */
     using handle_type = VkDevice;
+
+    /**
+     * @brief The parent object type required to construct a device_impl.
+     */
     using parent_type = physical_device_description_impl;
   private:
     std::unique_ptr<dispatch::device::table> m_ddt{ };
@@ -40,7 +53,6 @@ namespace megatech::vulkan::internal::base {
     /**
      * @brief Construct a device_impl.
      * @param parent A shared_ptr to a read-only physical_device_description_impl. This must not be null.
-     * @param description A description of the device to construct.
      */
     device_impl(const std::shared_ptr<const parent_type>& parent);
 

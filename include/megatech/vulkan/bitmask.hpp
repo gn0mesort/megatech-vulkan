@@ -1,3 +1,10 @@
+/**
+ * @file bitmask.hpp
+ * @brief Bitmask Operations and Bit Definition Macros
+ * @author Alexander Rothman <[gnomesort@megate.ch](mailto:gnomesort@megate.ch)>
+ * @copyright AGPL-3.0-or-later
+ * @date 2025
+ */
 #ifndef MEGATECH_VULKAN_BITMASK_HPP
 #define MEGATECH_VULKAN_BITMASK_HPP
 

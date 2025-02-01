@@ -1,3 +1,10 @@
+/**
+ * @file layer_description.hpp
+ * @brief Vulkan Layer Descriptions
+ * @author Alexander Rothman <[gnomesort@megate.ch](mailto:gnomesort@megate.ch)>
+ * @copyright AGPL-3.0-or-later
+ * @date 2025
+ */
 #ifndef MEGATECH_VULKAN_LAYER_DESCRIPTION_HPP
 #define MEGATECH_VULKAN_LAYER_DESCRIPTION_HPP
 
@@ -21,6 +28,9 @@ namespace megatech::vulkan {
    */
   class layer_description final {
   public:
+    /**
+     * @brief The opaque internal type used to initialize a layer_description.
+     */
     using proxy_type = internal::base::layer_description_proxy;
   private:
     version m_specification_version{ 0, 1, 0, 0 };
@@ -83,7 +93,7 @@ namespace megatech::vulkan {
      * @param rhs The string to compare to.
      * @return True if the layer's name matches rhs. False otherwise.
      */
-    bool operator==(const std::string& name) const;
+    bool operator==(const std::string& rhs) const;
 
     /**
      * @brief Retrieve a read-only reference to a layer_description's specification version.
@@ -112,6 +122,7 @@ namespace megatech::vulkan {
 
 }
 
+/// @cond
 // It's weird, but one of the few times it's acceptable to open the std namespace is to specialize template structs.
 namespace std {
 
@@ -139,5 +150,6 @@ namespace std {
   };
 
 }
+/// @endcond
 
 #endif

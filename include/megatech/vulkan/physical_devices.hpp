@@ -1,3 +1,10 @@
+/**
+ * @file physical_devices.hpp
+ * @brief Vulkan Physical Devices
+ * @author Alexander Rothman <[gnomesort@megate.ch](mailto:gnomesort@megate.ch)>
+ * @copyright AGPL-3.0-or-later
+ * @date 2025
+ */
 #ifndef MEGATECH_VULKAN_PHYSICAL_DEVICES_HPP
 #define MEGATECH_VULKAN_PHYSICAL_DEVICES_HPP
 
@@ -54,6 +61,9 @@ namespace async_transfer_support {
    */
   class physical_device_description final {
   public:
+    /**
+     * @brief The internal implementation type of the physical_device_description.
+     */
     using implementation_type = internal::base::physical_device_description_impl;
   private:
     std::shared_ptr<implementation_type> m_impl{ };
@@ -164,13 +174,44 @@ namespace async_transfer_support {
 
     bool is_valid(const physical_device_description& physical_device) const;
   public:
+    /**
+     * @brief The type of value held by the physical_device_list.
+     */
     using value_type = physical_device_description;
+
+    /**
+     * @brief The type that represents the size of the physical_device_list.
+     */
     using size_type = std::vector<physical_device_description>::size_type;
+
+    /**
+     * @brief The type that can represent differences between physical_device_list iterators.
+     */
     using difference_type = std::vector<physical_device_description>::difference_type;
+
+    /**
+     * @brief The reference type returned by physical_device_list accessors.
+     */
     using reference = value_type&;
+
+    /**
+     * @brief The read-only reference type returned by physical_device_list accessors.
+     */
     using const_reference = const value_type&;
+
+    /**
+     * @brief The read-only pointer type returned by access into the physical_device_list's storage.
+     */
     using const_pointer = const value_type*;
+
+    /**
+     * @brief The read-only forward iterator type used by the physical_device_list.
+     */
     using const_iterator = std::vector<physical_device_description>::const_iterator;
+
+    /**
+     * @brief The read-only reverse iterator type used by the physical_device_list.
+     */
     using const_reverse_iterator = std::vector<physical_device_description>::const_reverse_iterator;
 
     /// @cond

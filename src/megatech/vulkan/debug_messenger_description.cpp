@@ -1,3 +1,10 @@
+/**
+ * @file debug_messenger_description.cpp
+ * @brief Debug Messenger Descriptions
+ * @author Alexander Rothman <[gnomesort@megate.ch](mailto:gnomesort@megate.ch)>
+ * @copyright AGPL-3.0-or-later
+ * @date 2025
+ */
 #include "megatech/vulkan/debug_messenger_description.hpp"
 
 #include <megatech/assertions.hpp>

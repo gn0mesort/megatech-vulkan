@@ -1,3 +1,10 @@
+/**
+ * @file instance.hpp
+ * @brief Vulkan Instances
+ * @author Alexander Rothman <[gnomesort@megate.ch](mailto:gnomesort@megate.ch)>
+ * @copyright AGPL-3.0-or-later
+ * @date 2025
+ */
 #ifndef MEGATECH_VULKAN_INSTANCE_HPP
 #define MEGATECH_VULKAN_INSTANCE_HPP
 
@@ -26,14 +33,22 @@ namespace megatech::vulkan {
    */
   class instance {
   public:
+    /**
+     * @brief The internal implementation type of the instance.
+     */
     using implementation_type = internal::base::instance_impl;
   private:
     std::shared_ptr<implementation_type> m_impl{ };
   protected:
-    instance() = default;
+    /**
+     * @brief Construct an instance.
+     * @details This is an inheriting constructor.
+     * @param impl A shared_ptr pointer to the implementation. This must not be null.
+     */
     explicit instance(const std::shared_ptr<implementation_type>& impl);
   public:
     /// @cond
+    instance() = delete;
     instance(const instance& other) = delete;
     instance(instance&& other) = delete;
     /// @endcond
@@ -80,8 +95,16 @@ namespace megatech::vulkan {
    */
   class debug_instance : public instance {
   public:
+    /**
+     * @brief The extended internal implementation type of the debug_instance.
+     */
     using extended_implementation_type = internal::base::debug_instance_impl;
   protected:
+    /**
+     * @brief Construct a debug_instance.
+     * @details This is an inheriting constructor.
+     * @param impl A shared_ptr pointer to the implementation. This must not be null.
+     */
     explicit debug_instance(const std::shared_ptr<extended_implementation_type>& impl);
   public:
     /// @cond

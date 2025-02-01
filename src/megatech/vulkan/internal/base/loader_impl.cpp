@@ -1,3 +1,11 @@
+/// @cond INTERNAL
+/**
+ * @file loader_impl.cpp
+ * @brief Loader Implementation
+ * @author Alexander Rothman <[gnomesort@megate.ch](mailto:gnomesort@megate.ch)>
+ * @copyright AGPL-3.0-or-later
+ * @date 2025
+ */
 #include "megatech/vulkan/internal/base/loader_impl.hpp"
 
 #include <vector>
@@ -95,3 +103,4 @@ namespace megatech::vulkan::internal::base {
   }
 
 }
+/// @endcond

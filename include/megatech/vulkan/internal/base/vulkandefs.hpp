@@ -1,8 +1,17 @@
 /// @cond INTERNAL
+/**
+ * @file vulkandefs.hpp
+ * @brief Single Source Vulkan Definitions
+ * @author Alexander Rothman <[gnomesort@megate.ch](mailto:gnomesort@megate.ch)>
+ * @copyright AGPL-3.0-or-later
+ * @date 2025
+ */
 #ifndef MEGATECH_VULKAN_INTERNAL_BASE_VULKANDEFS_HPP
 #define MEGATECH_VULKAN_INTERNAL_BASE_VULKANDEFS_HPP
 
+/// @cond
 #define VK_NO_PROTOTYPES (1)
+/// @endcond
 #include <vulkan/vulkan.h>
 
 #include <megatech/vulkan/dispatch/commands.hpp>
