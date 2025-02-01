@@ -1,7 +1,10 @@
 #include "megatech/vulkan/internal/base/instance_impl.hpp"
 
+#include <bit>
 #include <utility>
 #include <algorithm>
+
+#include <megatech/assertions.hpp>
 
 #include "config.hpp"
 
@@ -17,18 +20,27 @@
 
 namespace {
 
-  // Not a very meritorious implementation. This is really just a stub for my sanity right now.
   VKAPI_ATTR VkBool32 VKAPI_CALL
   vkDebugUtilsMessengerCallbackEXT(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
                                    VkDebugUtilsMessageTypeFlagsEXT messageTypes,
                                    const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
                                    void* pUserData) {
+    constexpr auto all_severities = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT |
+                                    VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT |
+                                    VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT |
+                                    VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
+    constexpr auto all_types = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT |
+                               VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT |
+                               VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT;
+    MEGATECH_PRECONDITION(std::has_single_bit(static_cast<std::uint64_t>(messageSeverity)));
+    MEGATECH_PRECONDITION((messageSeverity & all_severities) != 0);
+    MEGATECH_PRECONDITION((messageTypes & all_types) != 0);
     using megatech::vulkan::debug_messenger_description;
     using megatech::vulkan::bitmask;
     if (pUserData)
     {
       const auto& sink = *reinterpret_cast<std::function<debug_messenger_description::message_sink_fn>*>(pUserData);
-      sink(static_cast<bitmask>(messageTypes), static_cast<bitmask>(messageSeverity),pCallbackData->pMessage);
+      sink(static_cast<bitmask>(messageTypes), static_cast<bitmask>(messageSeverity), pCallbackData->pMessage);
     }
     return VK_FALSE;
   }
@@ -59,7 +71,20 @@ namespace megatech::vulkan::internal::base {
   instance_impl::instance_impl(const std::shared_ptr<const loader_impl>& parent,
                                std::unique_ptr<const class physical_device_allocator>&& allocator) :
   m_physical_device_allocator{ std::move(allocator) },
-  m_parent{ parent } { }
+  m_parent{ parent } {
+    if (!parent)
+    {
+      throw error{ "The parent loader cannot be null." };
+    }
+    // Because of the move operation, this has to be validated through the member pointer.
+    if (!m_physical_device_allocator)
+    {
+      throw error{ "The physical_device_allocator cannot be null." };
+    }
+    MEGATECH_POSTCONDITION(m_parent != nullptr);
+    MEGATECH_POSTCONDITION(m_parent == parent);
+    MEGATECH_POSTCONDITION(m_physical_device_allocator != nullptr);
+  }
 
   instance_impl::instance_impl(const std::shared_ptr<const loader_impl>& parent,
                                std::unique_ptr<const class physical_device_allocator>&& allocator,
@@ -67,6 +92,14 @@ namespace megatech::vulkan::internal::base {
                                const instance_description& description) :
   m_physical_device_allocator{ std::move(allocator) },
   m_parent{ parent } {
+    if (!parent)
+    {
+      throw error{ "The parent loader cannot be null." };
+    }
+    if (!m_physical_device_allocator)
+    {
+      throw error{ "The physical_device_allocator cannot be null." };
+    }
     {
       DECLARE_GLOBAL_PFN_NO_THROW(parent->dispatch_table(), vkEnumerateInstanceVersion);
       if (!vkEnumerateInstanceVersion)
@@ -126,34 +159,43 @@ namespace megatech::vulkan::internal::base {
     instance_info.enabledExtensionCount = enabled_extensions.size();
     instance_info.ppEnabledExtensionNames = enabled_extensions.data();
     DECLARE_GLOBAL_PFN(m_parent->dispatch_table(), vkCreateInstance);
-    VK_CHECK(vkCreateInstance(&instance_info, nullptr, &m_instance));
-    m_idt.reset(new dispatch::instance::table{ m_parent->dispatch_table(), m_instance });
+    auto instance = VkInstance{ };
+    VK_CHECK(vkCreateInstance(&instance_info, nullptr, &instance));
+    m_idt.reset(new dispatch::instance::table{ m_parent->dispatch_table(), instance });
+    MEGATECH_POSTCONDITION(m_parent != nullptr);
+    MEGATECH_POSTCONDITION(m_parent == parent);
+    MEGATECH_POSTCONDITION(m_physical_device_allocator != nullptr);
+    MEGATECH_POSTCONDITION(m_idt != nullptr);
+    MEGATECH_POSTCONDITION(m_idt->instance() == instance);
   }
 
   instance_impl::~instance_impl() noexcept {
     // This allows changing destruction behavior in a derived class (e.g., debug_instance_impl). A derived class
-    // can destroy the instance on its own and then null the handle to prevent a double free situation.
-    if (m_instance != VK_NULL_HANDLE)
+    // can destroy the dispatch table on its own and then null the pointer to prevent a double free situation.
+    if (m_idt)
     {
       DECLARE_INSTANCE_PFN_NO_THROW(*m_idt, vkDestroyInstance);
-      vkDestroyInstance(m_instance, nullptr);
-      m_instance = VK_NULL_HANDLE;
+      vkDestroyInstance(m_idt->instance(), nullptr);
     }
   }
 
   const class physical_device_allocator& instance_impl::physical_device_allocator() const {
+    MEGATECH_PRECONDITION(m_physical_device_allocator != nullptr);
     return *m_physical_device_allocator;
   }
 
   const dispatch::instance::table& instance_impl::dispatch_table() const {
+    MEGATECH_PRECONDITION(m_idt != nullptr);
     return *m_idt;
   }
 
   instance_impl::handle_type instance_impl::handle() const {
-    return m_instance;
+    MEGATECH_PRECONDITION(m_idt != nullptr);
+    return m_idt->instance();
   }
 
   const instance_impl::parent_type& instance_impl::parent() const {
+    MEGATECH_PRECONDITION(m_parent != nullptr);
     return *m_parent;
   }
 
@@ -246,36 +288,41 @@ namespace megatech::vulkan::internal::base {
     instance_info.ppEnabledExtensionNames = enabled_extensions.data();
     instance_info.pNext = &debug_utils_messenger_info;
     DECLARE_GLOBAL_PFN(m_parent->dispatch_table(), vkCreateInstance);
-    VK_CHECK(vkCreateInstance(&instance_info, nullptr, &m_instance));
-    m_idt.reset(new dispatch::instance::table{ m_parent->dispatch_table(), m_instance });
+    auto instance = VkInstance{ };
+    VK_CHECK(vkCreateInstance(&instance_info, nullptr, &instance));
+    m_idt.reset(new dispatch::instance::table{ m_parent->dispatch_table(), instance });
     DECLARE_INSTANCE_PFN(*m_idt, vkCreateDebugUtilsMessengerEXT);
-    VK_CHECK(vkCreateDebugUtilsMessengerEXT(m_instance, &debug_utils_messenger_info, nullptr,
+    VK_CHECK(vkCreateDebugUtilsMessengerEXT(m_idt->instance(), &debug_utils_messenger_info, nullptr,
                                             &m_debug_utils_messenger));
+    MEGATECH_POSTCONDITION(m_idt != nullptr);
+    MEGATECH_POSTCONDITION(m_idt->instance() == instance);
+    MEGATECH_POSTCONDITION(m_debug_utils_messenger != VK_NULL_HANDLE);
+    MEGATECH_POSTCONDITION(m_message_sink != nullptr);
   }
 
   debug_instance_impl::~debug_instance_impl() noexcept {
-    if (m_debug_utils_messenger != VK_NULL_HANDLE)
-    {
-      DECLARE_INSTANCE_PFN_NO_THROW(*m_idt, vkDestroyDebugUtilsMessengerEXT);
-      vkDestroyDebugUtilsMessengerEXT(m_instance, m_debug_utils_messenger, nullptr);
-      m_debug_utils_messenger = VK_NULL_HANDLE;
-    }
-    if (m_instance != VK_NULL_HANDLE)
-    {
-      DECLARE_INSTANCE_PFN_NO_THROW(*m_idt, vkDestroyInstance);
-      vkDestroyInstance(m_instance, nullptr);
-      // Ensure that the parent destructor is a no-op.
-      m_instance = VK_NULL_HANDLE;
-    }
+    DECLARE_INSTANCE_PFN_NO_THROW(*m_idt, vkDestroyDebugUtilsMessengerEXT);
+    vkDestroyDebugUtilsMessengerEXT(m_idt->instance(), m_debug_utils_messenger, nullptr);
+    // The instance must be destoryed here to ensure that m_message_sink is valid during destruction.
+    DECLARE_INSTANCE_PFN_NO_THROW(*m_idt, vkDestroyInstance);
+    vkDestroyInstance(m_idt->instance(), nullptr);
+    // Ensure that the parent destructor is a no-op.
+    m_idt.reset();
+    MEGATECH_POSTCONDITION(m_idt == nullptr);
   }
 
   void debug_instance_impl::submit_debug_message(const bitmask types, const bitmask severity,
                                                  const std::string& message) const {
+    MEGATECH_PRECONDITION((types & ~debug_messenger_description::default_message_types) == bitmask{ 0 });
+    MEGATECH_PRECONDITION((types & debug_messenger_description::default_message_types) != bitmask{ 0 });
+    MEGATECH_PRECONDITION(std::has_single_bit(static_cast<std::uint64_t>(severity)));
+    MEGATECH_POSTCONDITION((severity & ~debug_messenger_description::default_message_severities) == bitmask{ 0 });
+    MEGATECH_PRECONDITION((severity & debug_messenger_description::default_message_severities) != bitmask{ 0 });
     auto callback_data = VkDebugUtilsMessengerCallbackDataEXT{ };
     callback_data.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CALLBACK_DATA_EXT;
     callback_data.pMessage = message.data();
     DECLARE_INSTANCE_PFN(*m_idt, vkSubmitDebugUtilsMessageEXT);
-    vkSubmitDebugUtilsMessageEXT(m_instance, static_cast<VkDebugUtilsMessageSeverityFlagBitsEXT>(severity),
+    vkSubmitDebugUtilsMessageEXT(m_idt->instance(), static_cast<VkDebugUtilsMessageSeverityFlagBitsEXT>(severity),
                                  static_cast<VkDebugUtilsMessageTypeFlagsEXT>(types),
                                  &callback_data);
   }

@@ -90,6 +90,15 @@ namespace megatech::vulkan {
   }
 
   /**
+   * @brief Invert a bitmask.
+   * @param lhs The bitmask to invert.
+   * @return The complement of lhs.
+   */
+  constexpr bitmask operator~(const bitmask lhs) noexcept {
+    return bitmask{ ~static_cast<std::uint64_t>(lhs) };
+  }
+
+  /**
    * @brief Perform a bit-wise OR operation between two bitmasks.
    * @param lhs The left hand operand mask.
    * @param rhs The right hand operand mask.
@@ -148,6 +157,28 @@ namespace megatech::vulkan {
   constexpr bitmask& operator^=(bitmask& lhs, const bitmask rhs) noexcept {
     return lhs = lhs ^ rhs;
   }
+
+  /**
+   * @brief Compare two bitmasks for equality.
+   * @param lhs The left hand operand mask.
+   * @param rhs The right hand operand mask.
+   * @return True if lhs and rhs represent the same set of enabled bits. False otherwise.
+   */
+  constexpr bool operator==(const bitmask lhs, const bitmask rhs) noexcept {
+    return static_cast<std::uint64_t>(lhs) == static_cast<std::uint64_t>(rhs);
+  }
+
+  /**
+   * @brief Compare two bitmasks for inequality.
+   * @param lhs The left hand operand mask.
+   * @param rhs The right hand operand mask.
+   * @return True if lhs and rhs do not represent the same set of enabled bits. False otherwise.
+   */
+  constexpr bool operator!=(const bitmask lhs, const bitmask rhs) noexcept {
+    return !(lhs == rhs);
+  }
+
+
 
 }
 

@@ -130,7 +130,6 @@ namespace megatech::vulkan::internal::base {
     std::unique_ptr<dispatch::instance::table> m_idt{ };
     std::unique_ptr<const class physical_device_allocator> m_physical_device_allocator{ };
     std::shared_ptr<const parent_type> m_parent{ };
-    VkInstance m_instance{ VK_NULL_HANDLE };
     std::unordered_set<std::string> m_enabled_layers{ };
     std::unordered_set<std::string> m_enabled_extensions{ };
   public:

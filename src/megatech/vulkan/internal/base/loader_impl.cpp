@@ -2,6 +2,8 @@
 
 #include <vector>
 
+#include <megatech/assertions.hpp>
+
 #include "megatech/vulkan/internal/base/vulkandefs.hpp"
 #include "megatech/vulkan/internal/base/layer_description_proxy.hpp"
 
@@ -16,6 +18,8 @@ namespace megatech::vulkan::internal::base {
     {
       throw error{ "The loader entry function \"vkGetInstanceProcAddr\" cannot be null." };
     }
+    MEGATECH_POSTCONDITION(m_gipa != nullptr);
+    MEGATECH_POSTCONDITION(m_gipa == gipa);
   }
 
   PFN_vkGetInstanceProcAddr loader_function_owner::pfn() const {
@@ -25,6 +29,10 @@ namespace megatech::vulkan::internal::base {
   loader_impl::loader_impl(const std::shared_ptr<const loader_function_owner>& pfn_owner) :
   m_pfn_owner{ pfn_owner },
   m_gdt{ new dispatch::global::table{ m_pfn_owner->pfn() } } {
+    if (!pfn_owner)
+    {
+      throw error{ "The loader function owner cannot be null." };
+    }
     auto sz = std::uint32_t{ };
     {
       DECLARE_GLOBAL_PFN(*m_gdt, vkEnumerateInstanceLayerProperties);
@@ -59,9 +67,14 @@ namespace megatech::vulkan::internal::base {
       }
     }
     m_available_extensions.rehash(0);
+    MEGATECH_POSTCONDITION(m_pfn_owner != nullptr);
+    MEGATECH_POSTCONDITION(m_pfn_owner == pfn_owner);
+    MEGATECH_POSTCONDITION(m_gdt != nullptr);
+    MEGATECH_POSTCONDITION(m_available_extensions.contains(""));
   }
 
   const dispatch::global::table& loader_impl::dispatch_table() const {
+    MEGATECH_PRECONDITION(m_gdt != nullptr);
     return *m_gdt;
   }
 
@@ -74,6 +87,10 @@ namespace megatech::vulkan::internal::base {
   }
 
   const std::unordered_set<std::string>& loader_impl::available_instance_extensions(const std::string& layer) const {
+    if (!layer.empty() && !m_available_layers.contains(layer))
+    {
+      throw error{ "Extensions can only be queried for layers that are available to the loader." };
+    }
     return m_available_extensions.at(layer);
   }
 

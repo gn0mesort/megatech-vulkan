@@ -1,9 +1,9 @@
 #include "megatech/vulkan/version.hpp"
 
-#define VK_NO_PROTOTYPES (1)
-#include <vulkan/vulkan.h>
 
 #include "megatech/vulkan/error.hpp"
+
+#include "megatech/vulkan/internal/base/vulkandefs.hpp"
 
 namespace megatech::vulkan {
 

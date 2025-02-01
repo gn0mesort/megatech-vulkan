@@ -6,6 +6,8 @@
 #include <algorithm>
 #include <type_traits>
 
+#include <megatech/assertions.hpp>
+
 #include "config.hpp"
 
 #include "megatech/vulkan/internal/base/vulkandefs.hpp"
@@ -129,6 +131,9 @@ namespace megatech::vulkan::internal::base {
     m_primary_queue_family = primary;
     m_async_compute_queue_family = compute;
     m_async_transfer_queue_family = transfer;
+    MEGATECH_POSTCONDITION(m_primary_queue_family < static_cast<std::int64_t>(m_queue_family_properties.size()));
+    MEGATECH_POSTCONDITION(m_async_compute_queue_family < static_cast<std::int64_t>(m_queue_family_properties.size()));
+    MEGATECH_POSTCONDITION(m_async_transfer_queue_family < static_cast<std::int64_t>(m_queue_family_properties.size()));
   }
 
   void physical_device_description_impl::add_required_extension(const std::string& extension) {
@@ -153,6 +158,7 @@ namespace megatech::vulkan::internal::base {
 
   void physical_device_description_impl::require_1_3_features(const VkPhysicalDeviceVulkan13Features& features) {
     m_required_features_1_3 = featuremerge(features, m_required_features_1_3);
+    MEGATECH_POSTCONDITION(m_required_features_1_3.dynamicRendering == VK_TRUE);
   }
 
   void physical_device_description_impl::append_extended_feature_chain(void *const next) {
@@ -163,10 +169,18 @@ namespace megatech::vulkan::internal::base {
     return true;
   }
 
-  physical_device_description_impl::physical_device_description_impl(std::shared_ptr<const instance_impl> parent,
+  physical_device_description_impl::physical_device_description_impl(std::shared_ptr<const parent_type> parent,
                                                                      VkPhysicalDevice handle) :
   m_parent{ parent },
   m_handle{ handle } {
+    if (!parent)
+    {
+      throw error{ "The parent instance cannot be null." };
+    }
+    if (handle == VK_NULL_HANDLE)
+    {
+      throw error{ "The physical device handle cannot be null." };
+    }
     auto properties2 = VkPhysicalDeviceProperties2{ };
     properties2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2;
     m_properties_1_1.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_PROPERTIES;
@@ -302,13 +316,36 @@ namespace megatech::vulkan::internal::base {
         break;
       }
     }
+    MEGATECH_POSTCONDITION(m_parent != nullptr);
+    MEGATECH_POSTCONDITION(m_parent == parent);
+    MEGATECH_POSTCONDITION(m_handle != VK_NULL_HANDLE);
+    MEGATECH_POSTCONDITION(m_handle == handle);
+    MEGATECH_POSTCONDITION(m_primary_queue_family < static_cast<std::int64_t>(m_queue_family_properties.size()));
+    MEGATECH_POSTCONDITION(m_async_compute_queue_family < static_cast<std::int64_t>(m_queue_family_properties.size()));
+    MEGATECH_POSTCONDITION(m_async_transfer_queue_family < static_cast<std::int64_t>(m_queue_family_properties.size()));
+    MEGATECH_POSTCONDITION(m_required_extensions.contains("VK_KHR_dynamic_rendering_local_read"));
+    MEGATECH_POSTCONDITION(m_required_features.pNext == &m_required_features_1_1);
+    MEGATECH_POSTCONDITION(m_required_features.sType == VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2);
+    MEGATECH_POSTCONDITION(m_required_features_1_1.pNext == &m_required_features_1_2);
+    MEGATECH_POSTCONDITION(m_required_features_1_1.sType == VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_FEATURES);
+    MEGATECH_POSTCONDITION(m_required_features_1_2.pNext == &m_required_features_1_3);
+    MEGATECH_POSTCONDITION(m_required_features_1_2.sType == VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES);
+    MEGATECH_POSTCONDITION(m_required_features_1_3.pNext == &m_required_dynamic_rendering_local_read_features);
+    MEGATECH_POSTCONDITION(m_required_features_1_3.sType == VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES);
+    MEGATECH_POSTCONDITION(m_required_features_1_3.dynamicRendering == VK_TRUE);
+    MEGATECH_POSTCONDITION(m_required_dynamic_rendering_local_read_features.pNext == nullptr);
+    MEGATECH_POSTCONDITION(m_required_dynamic_rendering_local_read_features.sType ==
+                           VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_LOCAL_READ_FEATURES_KHR);
+    MEGATECH_POSTCONDITION(m_required_dynamic_rendering_local_read_features.dynamicRenderingLocalRead == VK_TRUE);
   }
 
   physical_device_description_impl::handle_type physical_device_description_impl::handle() const {
+    MEGATECH_PRECONDITION(m_handle != VK_NULL_HANDLE);
     return m_handle;
   }
 
   const physical_device_description_impl::parent_type& physical_device_description_impl::parent() const {
+    MEGATECH_PRECONDITION(m_parent != nullptr);
     return *m_parent;
   }
 
@@ -353,22 +390,31 @@ namespace megatech::vulkan::internal::base {
   }
 
   int64_t physical_device_description_impl::primary_queue_family_index() const {
+    MEGATECH_PRECONDITION(m_primary_queue_family < static_cast<std::int64_t>(m_queue_family_properties.size()));
     return m_primary_queue_family;
   }
 
   int64_t physical_device_description_impl::async_compute_queue_family_index() const {
+    MEGATECH_PRECONDITION(m_async_compute_queue_family < static_cast<std::int64_t>(m_queue_family_properties.size()));
     return m_async_compute_queue_family;
   }
 
   int64_t physical_device_description_impl::async_transfer_queue_family_index() const {
+    MEGATECH_PRECONDITION(m_async_transfer_queue_family < static_cast<std::int64_t>(m_queue_family_properties.size()));
     return m_async_transfer_queue_family;
   }
 
   const VkQueueFamilyProperties& physical_device_description_impl::primary_queue_family_properties() const {
+    MEGATECH_PRECONDITION(m_primary_queue_family < static_cast<std::int64_t>(m_queue_family_properties.size()));
+    if (m_primary_queue_family == -1)
+    {
+      throw error{ "The physical device does not support the minimum required operations." };
+    }
     return m_queue_family_properties[m_primary_queue_family];
   }
 
   const VkQueueFamilyProperties& physical_device_description_impl::async_compute_queue_family_properties() const {
+    MEGATECH_PRECONDITION(m_async_compute_queue_family < static_cast<std::int64_t>(m_queue_family_properties.size()));
     if (m_async_compute_queue_family == -1)
     {
       throw error{ "The physical device does not support asynchronous compute operations." };
@@ -377,6 +423,7 @@ namespace megatech::vulkan::internal::base {
   }
 
   const VkQueueFamilyProperties& physical_device_description_impl::async_transfer_queue_family_properties() const {
+    MEGATECH_PRECONDITION(m_async_transfer_queue_family < static_cast<std::int64_t>(m_queue_family_properties.size()));
     if (m_async_transfer_queue_family == -1)
     {
       throw error{ "The physical device does not support asynchronous transfer operations." };
@@ -385,6 +432,7 @@ namespace megatech::vulkan::internal::base {
   }
 
   bool physical_device_description_impl::is_valid() const {
+    MEGATECH_PRECONDITION(m_primary_queue_family < static_cast<std::int64_t>(m_queue_family_properties.size()));
     auto has_extensions = true;
     for (const auto& extension : m_required_extensions)
     {
@@ -406,6 +454,20 @@ namespace megatech::vulkan::internal::base {
   }
 
   const VkPhysicalDeviceFeatures2& physical_device_description_impl::required_features() const {
+    MEGATECH_PRECONDITION(m_required_extensions.contains("VK_KHR_dynamic_rendering_local_read"));
+    MEGATECH_PRECONDITION(m_required_features.pNext == &m_required_features_1_1);
+    MEGATECH_PRECONDITION(m_required_features.sType == VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2);
+    MEGATECH_PRECONDITION(m_required_features_1_1.pNext == &m_required_features_1_2);
+    MEGATECH_PRECONDITION(m_required_features_1_1.sType == VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_FEATURES);
+    MEGATECH_PRECONDITION(m_required_features_1_2.pNext == &m_required_features_1_3);
+    MEGATECH_PRECONDITION(m_required_features_1_2.sType == VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES);
+    MEGATECH_PRECONDITION(m_required_features_1_3.pNext == &m_required_dynamic_rendering_local_read_features);
+    MEGATECH_PRECONDITION(m_required_features_1_3.sType == VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES);
+    MEGATECH_PRECONDITION(m_required_features_1_3.dynamicRendering == VK_TRUE);
+    MEGATECH_PRECONDITION(m_required_dynamic_rendering_local_read_features.pNext == nullptr);
+    MEGATECH_PRECONDITION(m_required_dynamic_rendering_local_read_features.sType ==
+                          VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_LOCAL_READ_FEATURES_KHR);
+    MEGATECH_PRECONDITION(m_required_dynamic_rendering_local_read_features.dynamicRenderingLocalRead == VK_TRUE);
     return m_required_features;
   }
 

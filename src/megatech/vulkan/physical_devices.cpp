@@ -3,6 +3,9 @@
 #include <cinttypes>
 
 #include <utility>
+#include <algorithm>
+
+#include <megatech/assertions.hpp>
 
 #include "megatech/vulkan/instance.hpp"
 #include "megatech/vulkan/version.hpp"
@@ -18,25 +21,32 @@
 namespace megatech::vulkan {
 
   physical_device_description::physical_device_description(const std::shared_ptr<implementation_type>& impl) :
-  m_impl{ impl } { }
+  m_impl{ impl } {
+    MEGATECH_POSTCONDITION(m_impl != nullptr);
+  }
 
   bool physical_device_description::operator==(const physical_device_description& rhs) const noexcept {
+    MEGATECH_PRECONDITION(m_impl != nullptr);
     return m_impl->handle() == rhs.implementation().handle();
   }
 
   const physical_device_description::implementation_type& physical_device_description::implementation() const {
+    MEGATECH_PRECONDITION(m_impl != nullptr);
     return *m_impl;
   }
 
   physical_device_description::implementation_type& physical_device_description::implementation() {
+    MEGATECH_PRECONDITION(m_impl != nullptr);
     return *m_impl;
   }
 
   std::shared_ptr<const physical_device_description::implementation_type> physical_device_description::share_implementation() const {
+    MEGATECH_PRECONDITION(m_impl != nullptr);
     return m_impl;
   }
 
   bool physical_device_description::supports_rendering() const {
+    MEGATECH_PRECONDITION(m_impl != nullptr);
     return m_impl->primary_queue_family_properties().queueFlags & VK_QUEUE_GRAPHICS_BIT;
   }
 
@@ -45,10 +55,12 @@ namespace megatech::vulkan {
   }
 
   bool physical_device_description::supports_async_execution() const {
+    MEGATECH_PRECONDITION(m_impl != nullptr);
     return m_impl->async_transfer_queue_family_index() != -1;
   }
 
   int physical_device_description::supports_async_transfer() const {
+    MEGATECH_PRECONDITION(m_impl != nullptr);
     if (m_impl->async_transfer_queue_family_index() != -1)
     {
       return async_transfer_support::dedicated;
@@ -61,7 +73,10 @@ namespace megatech::vulkan {
   }
 
   physical_device_list::physical_device_list(std::vector<physical_device_description>&& filtered_list) :
-  m_physical_devices{ std::move(filtered_list) } { }
+  m_physical_devices{ std::move(filtered_list) } {
+    MEGATECH_POSTCONDITION(static_cast<std::size_t>(std::ranges::count_if(m_physical_devices,
+                          [](const auto& p){ return p.implementation().is_valid(); })) == m_physical_devices.size());
+  }
 
   physical_device_list::physical_device_list(const instance& inst) {
     auto parent = inst.share_implementation();
@@ -81,9 +96,12 @@ namespace megatech::vulkan {
       }
     }
     m_physical_devices.shrink_to_fit();
+    MEGATECH_POSTCONDITION(static_cast<std::size_t>(std::ranges::count_if(m_physical_devices,
+                          [](const auto& p){ return p.implementation().is_valid(); })) == m_physical_devices.size());
   }
 
   physical_device_list::const_reference physical_device_list::operator[](const physical_device_list::size_type index) const {
+    MEGATECH_PRECONDITION(index < m_physical_devices.size());
     return m_physical_devices[index];
   }
 
@@ -103,14 +121,17 @@ namespace megatech::vulkan {
   }
 
   physical_device_list::const_reference physical_device_list::at(const physical_device_list::size_type index) const {
+    MEGATECH_PRECONDITION(index < m_physical_devices.size());
     return m_physical_devices.at(index);
   }
 
   physical_device_list::const_reference physical_device_list::front() const {
+    MEGATECH_PRECONDITION(!m_physical_devices.empty());
     return m_physical_devices.front();
   }
 
   physical_device_list::const_reference physical_device_list::back() const {
+    MEGATECH_PRECONDITION(!m_physical_devices.empty());
     return m_physical_devices.back();
   }
 

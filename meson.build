@@ -32,9 +32,12 @@ if get_option('tests').allowed() or get_option('benchmarks').allowed()
 endif
 megatech_vulkan_dispatch_dep = dependency('megatech-vulkan-dispatch',
                                           fallback: [ 'megatech-vulkan-dispatch', 'megatech_vulkan_dispatch_dep' ])
+megatech_assertions_dep = dependency('megatech-assertions',
+                                     fallback: [ 'megatech-assertions', 'megatech_assertions_dep' ])
 dependencies = [
   vulkan_dep.partial_dependency(includes: true),
-  megatech_vulkan_dispatch_dep
+  megatech_vulkan_dispatch_dep,
+  megatech_assertions_dep
 ]
 includes = [
   include_directories('include')

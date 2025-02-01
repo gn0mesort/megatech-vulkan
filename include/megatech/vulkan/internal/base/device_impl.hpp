@@ -26,10 +26,9 @@ namespace megatech::vulkan::internal::base {
   public:
     using handle_type = VkDevice;
     using parent_type = physical_device_description_impl;
-  protected:
+  private:
     std::unique_ptr<dispatch::device::table> m_ddt{ };
     std::shared_ptr<const parent_type> m_parent{ };
-    VkDevice m_device{ };
     VkQueue m_primary_queue{ };
     VkQueue m_async_compute_queue{ };
     VkQueue m_async_transfer_queue{ };

@@ -28,7 +28,7 @@ namespace megatech::vulkan::internal::base {
      * @brief Construct a loader_function_owner.
      * @details This is an inheriting constructor. Derived loader_function_owners must invoke this to set up their
      *          PFN_vkGetInstanceProcAddr.
-     * @param gipa The loader function.
+     * @param gipa The loader function. This must not be null.
      */
     loader_function_owner(const PFN_vkGetInstanceProcAddr gipa);
   public:
@@ -115,7 +115,8 @@ namespace megatech::vulkan::internal::base {
      * @brief Retrieve the extensions available to Vulkan instances with the specified layer enabled from a
      *        loader_impl.
      * @param layer The name of the layer to query available extensions from. Passing the empty string will query
-     *              extensions that are available to all instances.
+     *              extensions that are available to all instances. The layer name must be a valid layer name returned
+     *              from available_layers() or the empty string.
      * @return A read-only reference to a set of Vulkan extension names.
      */
     const std::unordered_set<std::string>& available_instance_extensions(const std::string& layer) const;

@@ -4,8 +4,6 @@
 #include <memory>
 #include <vector>
 
-#include "defs.hpp"
-
 #include "concepts/opaque_object.hpp"
 
 namespace megatech::vulkan::internal {
