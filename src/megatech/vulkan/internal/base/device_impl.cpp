@@ -1,4 +1,3 @@
-/// @cond INTERNAL
 /**
  * @file device_impl.cpp
  * @brief Device Implementation
@@ -105,4 +104,3 @@ namespace megatech::vulkan::internal::base {
   }
 
 }
-/// @endcond

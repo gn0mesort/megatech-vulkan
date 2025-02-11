@@ -24,7 +24,6 @@
 #include "../../concepts/handle_owner.hpp"
 
 #include "vulkandefs.hpp"
-#include "physical_device_allocator.hpp"
 
 namespace megatech::vulkan {
 
@@ -35,141 +34,68 @@ namespace megatech::vulkan {
 namespace megatech::vulkan::internal::base {
 
   class loader_impl;
-
-  /**
-   * @brief A desctiption of a Vulkan instance.
-   * @details instance_descriptions replace VkInstanceCreateInfo. More so than VkDeviceCreateInfo, most of the
-   *          configuration of VkInstanceCreateInfo isn't appropriate for client applications. This exposes layers
-   *          and extensions only.
-   */
-  class instance_description final {
-  private:
-    std::unordered_set<std::string> m_requested_layers{ };
-    std::unordered_set<std::string> m_requested_extensions{ };
-    std::unordered_set<std::string> m_required_extensions{ };
-  public:
-    /**
-     * @brief Construct an instance_description.
-     */
-    instance_description() = default;
-
-    /**
-     * @brief Construct an instance_description.
-     * @param requested_layers A set of requested (optional) Vulkan layers to enable if they are available.
-     * @param requested_extensions A set of requested (optional) Vulkan instance extensions to enable if they are
-     *                             available.
-     * @param required_extensions A set of required (mandatory) Vulkan instance extensions to enable.
-     */
-    instance_description(const std::unordered_set<std::string>& requested_layers,
-                         const std::unordered_set<std::string>& requested_extensions,
-                         const std::unordered_set<std::string>& required_extensions);
-
-    /**
-     * @brief Copy an instance_description.
-     * @param other The instance_description to copy.
-     */
-    instance_description(const instance_description& other) = default;
-
-    /**
-     * @brief Move an instance_description.
-     * @param other The instance_description to move.
-     */
-    instance_description(instance_description&& other) = default;
-
-    /**
-     * @brief Destroy an instance_description.
-     */
-    ~instance_description() noexcept = default;
-
-    /**
-     * @brief Copy-assign an instance_description.
-     * @param rhs The instance_description to copy.
-     * @return A reference to the copied-to instance_description.
-     */
-    instance_description& operator=(const instance_description& rhs) = default;
-
-    /**
-     * @brief Move-assign an instance_description.
-     * @param rhs The instance_description to move.
-     * @return A reference to the moved-to instance_description.
-     */
-    instance_description& operator=(instance_description&& rhs) = default;
-
-    /**
-     * @brief Retrieve an instance_description's set of requested layers.
-     * @return A read-only reference to the set of requested layers.
-     */
-    const std::unordered_set<std::string>& requested_layers() const;
-
-    /**
-     * @brief Retrieve an instance_description's set of requested instance extensions.
-     * @return A read-only reference to the set of requested instance extensions.
-     */
-    const std::unordered_set<std::string>& requested_extensions() const;
-
-    /**
-     * @brief Retrieve an instance_description's set of required instance extensions.
-     * @return A read-only reference to the set of required instance extensions.
-     */
-    const std::unordered_set<std::string>& required_extensions() const;
-  };
+  class physical_device_description_impl;
 
   /**
    * @brief The implementation of a megatech::vulkan::instance.
    */
-  class instance_impl {
+  class instance_impl : public std::enable_shared_from_this<instance_impl> {
   public:
     /**
      * @brief The parent object type that must be used to initialize an instance_impl.
      */
     using parent_type = loader_impl;
-  protected:
-    /**
-     * @brief Construct an instance_impl.
-     * @details This is an inheritance only constructor that sets up the parent and validator. This should only be
-     *          invoked as part of a derived constructor.
-     * @param parent A read-only shared_ptr to the parent loader's implementation. This must not be null.
-     * @param allocator A read-only unique_ptr to a physical_device_allocator object. This should be the matching
-     *                  allocator to the type of physical_device_description_impl used by your adaptor. If your
-     *                  adaptor doesn't provide a derived physical_device_description_impl, you can use the default
-     *                  implementation. This must not be null.
-     */
-    instance_impl(const std::shared_ptr<const parent_type>& parent,
-                  std::unique_ptr<const class physical_device_allocator>&& allocator);
-
-    /// @cond
+  private:
     std::unique_ptr<dispatch::instance::table> m_idt{ };
-    std::unique_ptr<const class physical_device_allocator> m_physical_device_allocator{ };
     std::shared_ptr<const parent_type> m_parent{ };
     std::unordered_set<std::string> m_enabled_layers{ };
     std::unordered_set<std::string> m_enabled_extensions{ };
-    /// @endcond
+  protected:
+    /**
+     * @brief Construct an instance_impl.
+     * @details This is a deferred initialization constructor.
+     * @param parent A read-only shared_ptr to the parent loader implementation.
+     */
+    explicit instance_impl(const std::shared_ptr<const parent_type>& parent);
+
+    /**
+     * @brief Create an instance_impl's underlying VkInstance.
+     * @details This should only ever be called from a constructor.
+     * @param app_description A description of the application to be passed down to Vulkan.
+     * @param required_layers A set of layers that will be enabled in the created instance.
+     * @param required_extensions A set of extensions that will be enabled in the created instance.
+     * @param next A valid Vulkan pNext pointer chain. This must be compatible with VkInstanceCreateInfo. nullptr is
+     *             a valid input.
+     */
+    void create_instance(const application_description& app_description,
+                         const std::unordered_set<std::string>& required_layers,
+                         const std::unordered_set<std::string>& required_extensions,
+                         const void *const next);
+
+    /**
+     * @brief Destroy an instance_impl's underlying VkInstance and set the handle to VK_NULL_HANDLE.
+     * @details This should only ever be called from a destructor.
+     */
+    void destroy_instance() noexcept;
   public:
     /**
      * @brief The type of an instance_impl's owned Vulkan handle.
      */
     using handle_type = VkInstance;
 
-    /// @cond
-    instance_impl() = delete;
-    /// @endcond
-
     /**
      * @brief Construct an instance_impl.
      * @param parent A read-only shared_ptr to the parent loader's implementation. This must not be null.
-     * @param allocator A read-only unique_ptr to a physical_device_allocator object. This should be the matching
-     *                  allocator to the type of physical_device_description_impl used by your adaptor. If your
-     *                  adaptor doesn't provide a derived physical_device_description_impl, you can use the default
-     *                  implementation. This must not be null.
      * @param app_description A description of the client application to pass to the underlying Vulkan implementation.
-     * @param description A description of the instance layers and extensions to enable.
+     * @param requested_layers A set of layers to enable. Each layer is only enabled if it is available. If a layer
+     *                         is unavailable it is ignored.
      */
     instance_impl(const std::shared_ptr<const parent_type>& parent,
-                  std::unique_ptr<const class physical_device_allocator>&& allocator,
                   const application_description& app_description,
-                  const instance_description& description);
+                  const std::unordered_set<std::string>& requested_layers);
 
     /// @cond
+    instance_impl() = delete;
     instance_impl(const instance_impl& other) = delete;
     instance_impl(instance_impl&& other) = delete;
     /// @endcond
@@ -183,12 +109,6 @@ namespace megatech::vulkan::internal::base {
     instance_impl& operator=(const instance_impl& rhs) = delete;
     instance_impl& operator=(instance_impl&& rhs) = delete;
     /// @endcond
-
-    /**
-     * @brief Retrieve the instance_impl's physical_device_allocator.
-     * @return A read-only reference to a physical_device_allocator object.
-     */
-    const class physical_device_allocator& physical_device_allocator() const;
 
     /**
      * @brief Retrieve the instance_impl's dispatch table.
@@ -219,15 +139,59 @@ namespace megatech::vulkan::internal::base {
      * @return A read-only reference to a set of Vulkan extensions.
      */
     const std::unordered_set<std::string>& enabled_extensions() const;
+
+    /**
+     * @brief Resolve a physical_device_description_impl.
+     * @details This method resolves the type of created physical_device_description implementations. The default
+     *          behavior is to return a default megatech::vulkan::internal::base::physical_device_description_impl.
+     *          Adaptors that define extended description types should override this to return the extended
+     *          implementation type instead.
+     * @param physical_device The VkPhysicalDevice handle that identifies the device to describe. This must not be
+     *                        VK_NULL_HANDLE.
+     * @return A pointer to a new physical_device_description_impl. The caller is responsible for managing the
+     *         pointer's lifetime.
+     */
+    virtual physical_device_description_impl*
+    resolve_physical_device_description(const VkPhysicalDevice physical_device) const;
   };
 
   /**
    * @brief The implementation of a megatech::vulkan::debug_instance.
    */
-  class debug_instance_impl final : public instance_impl {
+  class debug_instance_impl : public instance_impl {
   private:
     VkDebugUtilsMessengerEXT m_debug_utils_messenger{ VK_NULL_HANDLE };
     std::function<debug_messenger_description::message_sink_fn> m_message_sink{ };
+  protected:
+    /**
+     * @brief Construct a debug_instance_impl.
+     * @details This is a deferred initialization constructor.
+     * @param parent A read-only shared_ptr to the parent loader.
+     */
+    explicit debug_instance_impl(const std::shared_ptr<const parent_type>& parent);
+
+    /**
+     * @brief Construct a debug_instance_impl.
+     * @details This is a deferred initialization constructor.
+     * @param parent A read-only shared_ptr to the parent loader.
+     * @param messenger_description A description of a debug messenger. The sink function is taken and copied in this
+     *                              constructor.
+     */
+    debug_instance_impl(const std::shared_ptr<const parent_type>& parent,
+                        const debug_messenger_description& messenger_description);
+
+    /**
+     * @brief Create a debug_instance_impl's underlying VkDebugUtilsMessengerEXT.
+     * @details This should only be called from a constructor.
+     * @param info A prepacked info structure describing the VkDebugUtilsMessengerEXT to create.
+     */
+    void create_debug_messenger(const VkDebugUtilsMessengerCreateInfoEXT& info);
+
+    /**
+     * @brief Destroy a debug_instance_impl's underlying VkDebugUitlsMessengerEXT.
+     * @details This should only be called from a destructor.
+     */
+    void destroy_debug_messenger() noexcept;
   public:
     /// @cond
     debug_instance_impl() = delete;
@@ -236,36 +200,28 @@ namespace megatech::vulkan::internal::base {
     /**
      * @brief Construct a debug_instance_impl.
      * @param parent A read-only shared_ptr to the parent loader's implementation. This must not be null.
-     * @param allocator A read-only unique_ptr to a physical_device_allocator object. This should be the matching
-     *                  allocator to the type of physical_device_description_impl used by your adaptor. If your
-     *                  adaptor doesn't provide a derived physical_device_description_impl, you can use the default
-     *                  implementation. This must not be null.
      * @param app_description A description of the client application to pass to the underlying Vulkan implementation.
-     * @param description A description of the instance layers and extensions to enable.
+     * @param requested_layers A set of layers to enable. Each layer is only enabled if it is available. If a layer
+     *                         is unavailable it is ignored.
      */
     debug_instance_impl(const std::shared_ptr<const parent_type>& parent,
-                        std::unique_ptr<const class physical_device_allocator>&& allocator,
                         const application_description& app_description,
-                        const instance_description& description);
+                        const std::unordered_set<std::string>& requested_layers);
 
     /**
      * @brief Construct a debug_instance_impl.
      * @param parent A read-only shared_ptr to the parent loader's implementation. This must not be null.
-     * @param allocator A read-only unique_ptr to a physical_device_allocator object. This should be the matching
-     *                  allocator to the type of physical_device_description_impl used by your adaptor. If your
-     *                  adaptor doesn't provide a derived physical_device_description_impl, you can use the default
-     *                  implementation. This must not be null.
      * @param app_description A description of the client application to pass to the underlying Vulkan implementation.
      * @param messenger_description A description of a debug messenger that will be constructed alongside the
      *                              underlying Vulkan instance. Dependencies of the messenger description must have
      *                              a longer lifetime than the underlying instance.
-     * @param description A description of the instance layers and extensions to enable.
+     * @param requested_layers A set of layers to enable. Each layer is only enabled if it is available. If a layer
+     *                         is unavailable it is ignored.
      */
     debug_instance_impl(const std::shared_ptr<const parent_type>& parent,
-                        std::unique_ptr<const class physical_device_allocator>&& allocator,
                         const application_description& app_description,
                         const debug_messenger_description& messenger_description,
-                        const instance_description& description);
+                        const std::unordered_set<std::string>& requested_layers);
 
     /// @cond
     debug_instance_impl(const debug_instance_impl& other) = delete;
@@ -275,7 +231,7 @@ namespace megatech::vulkan::internal::base {
     /**
      * @brief Destroy a debug_instance_impl.
      */
-    ~debug_instance_impl() noexcept;
+    virtual ~debug_instance_impl() noexcept;
 
     /// @cond
     debug_instance_impl& operator=(const debug_instance_impl& rhs) = delete;

@@ -5,7 +5,6 @@
 
 #include <catch2/catch_all.hpp>
 
-
 #include <megatech/vulkan.hpp>
 #include <megatech/vulkan/dispatch.hpp>
 #include <megatech/vulkan/adaptors/libvulkan.hpp>

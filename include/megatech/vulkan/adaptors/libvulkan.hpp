@@ -9,6 +9,5 @@
 #define MEGATECH_VULKAN_ADAPTORS_LIBVULKAN_HPP
 
 #include "libvulkan/loader.hpp"
-#include "libvulkan/instance.hpp"
 
 #endif

@@ -9,7 +9,7 @@ project(
     'warning_level=3',
     'b_ndebug=if-release',
     'b_pie=true',
-    'cpp_args=-fstrict-aliasing -Wstrict-aliasing=3'
+'cpp_args=-fstrict-aliasing -Wstrict-aliasing=3'
   ]
 )
 version = meson.project_version()
@@ -57,6 +57,7 @@ elif compiler.get_id() == 'msvc'
 else
   config.set('CONFIG_COMPILER_UNKNOWN', 1)
 endif
+config_header = configure_file(input: 'generated/include/config.hpp.in', output: '@BASENAME@', configuration: config)
 sources = [
   files('src/megatech/vulkan/error.cpp', 'src/megatech/vulkan/version.cpp',
         'src/megatech/vulkan/application_description.cpp', 'src/megatech/vulkan/debug_messenger_description.cpp',
@@ -66,9 +67,8 @@ sources = [
   files('src/megatech/vulkan/internal/base/loader_impl.cpp',
         'src/megatech/vulkan/internal/base/instance_impl.cpp',
         'src/megatech/vulkan/internal/base/physical_device_description_impl.cpp',
-        'src/megatech/vulkan/internal/base/physical_device_allocator.cpp',
         'src/megatech/vulkan/internal/base/device_impl.cpp'),
-  configure_file(input: 'generated/include/config.hpp.in', output: '@BASENAME@', configuration: config)
+  config_header
 ]
 megatech_vulkan_lib = library(meson.project_name(), sources, include_directories: includes,
                               dependencies: dependencies, version: version)
@@ -79,7 +79,8 @@ dependencies = [
   megatech_vulkan_dep
 ]
 sources = [
-  files('src/megatech/vulkan/adaptors/libvulkan/loader.cpp', 'src/megatech/vulkan/adaptors/libvulkan/instance.cpp')
+  files('src/megatech/vulkan/adaptors/libvulkan/loader.cpp'),
+  files('src/megatech/vulkan/adaptors/libvulkan/internal/base/loader_impl.cpp')
 ]
 megatech_vulkan_adaptor_libvulkan_lib = library('@0@-adaptor-@1@'.format(meson.project_name(), 'libvulkan'), sources,
                                                 include_directories: includes, dependencies: dependencies,
@@ -93,13 +94,12 @@ doc_env = environment()
 doc_env.set('DOXYGEN_PROJECT_NAME', meson.project_name())
 doc_env.set('DOXYGEN_PROJECT_NUMBER', meson.project_version())
 doc_env.set('DOXYGEN_OUTPUT_DIRECTORY', meson.current_build_dir() / 'documentation')
-doc_inputs = [ meson.current_source_dir() / 'include', meson.current_source_dir() / 'generated',
-               files('README.md')[0].full_path(), meson.current_source_dir() / 'documentation' ]
-doc_env.set('DOXYGEN_USE_MDFILE_AS_MAINPAGE', doc_inputs[2])
+readme = files('README.md')
+doc_inputs = [ meson.current_source_dir() / 'include', config_header.full_path(),
+               readme[0].full_path(), meson.current_source_dir() / 'documentation' ]
+doc_env.set('DOXYGEN_USE_MDFILE_AS_MAINPAGE', readme[0].full_path())
 doc_env.set('DOXYGEN_INPUT', ' '.join(doc_inputs))
-doc_excludes = [ meson.current_source_dir() / 'include/megatech/vulkan/internal' ]
-doc_strips = [ meson.current_build_dir() / 'generated/include', meson.current_build_dir() / 'generated/src',
-               meson.current_source_dir() / 'include' ]
+doc_strips = [ meson.current_build_dir(), meson.current_source_dir() / 'include' ]
 doc_env.set('DOXYGEN_STRIP_FROM_PATH', ' '.join(doc_strips))
 extra_css = files('documentation/extra.css')[0]
 doc_env.set('DOXYGEN_HTML_EXTRA_STYLESHEET', extra_css.full_path())

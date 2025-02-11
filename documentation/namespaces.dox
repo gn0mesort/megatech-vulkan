@@ -6,6 +6,14 @@
  * @namespace megatech::vulkan
  * @brief Vulkan Classes and Utilities
  */
+/**
+ * @namespace megatech::vulkan::adaptors
+ * @brief Megatech-Vulkan Platform Adaptors
+ */
+/**
+ * @namespace megatech::vulkan::adaptors::libvulkan
+ * @brief Standard Vulkan Loader Adaptor Classes
+ */
 /// @cond INTERNAL
 /**
  * @namespace megatech::vulkan::internal
@@ -14,5 +22,13 @@
 /**
  * @namespace megatech::vulkan::internal::base
  * @brief Cross-Platform Internal Functionality
+ */
+/**
+ * @namespace megatech::vulkan::adaptors::libvulkan::internal
+ * @brief Standard Vulkan Loader Adaptor Internal Functionality
+ */
+/**
+ * @namespace megatech::vulkan::adaptors::libvulkan::internal::base
+ * @brief Standard Vulkan Loader Adaptor Cross-Platform Internal Functionality
  */
 /// @endcond

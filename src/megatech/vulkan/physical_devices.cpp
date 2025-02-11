@@ -18,7 +18,6 @@
 #include "megatech/vulkan/version.hpp"
 
 #include "megatech/vulkan/internal/base/vulkandefs.hpp"
-#include "megatech/vulkan/internal/base/physical_device_allocator.hpp"
 #include "megatech/vulkan/internal/base/instance_impl.hpp"
 #include "megatech/vulkan/internal/base/physical_device_description_impl.hpp"
 
@@ -96,7 +95,7 @@ namespace megatech::vulkan {
     for (auto&& handle : handles)
     {
       using implementation_type = internal::base::physical_device_description_impl;
-      auto tmp = std::shared_ptr<implementation_type>{ parent->physical_device_allocator()(parent, handle) };
+      auto tmp = std::shared_ptr<implementation_type>{ parent->resolve_physical_device_description(handle) };
       if (tmp->is_valid())
       {
         m_physical_devices.emplace_back(tmp);

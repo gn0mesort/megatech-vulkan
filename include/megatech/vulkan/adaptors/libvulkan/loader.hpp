@@ -10,6 +10,12 @@
 
 #include <megatech/vulkan/loader.hpp>
 
+namespace megatech::vulkan::adaptors::libvulkan::internal::base {
+
+  class loader_impl;
+
+}
+
 namespace megatech::vulkan::adaptors::libvulkan {
 
   /**
@@ -17,6 +23,11 @@ namespace megatech::vulkan::adaptors::libvulkan {
    */
   class loader final : public megatech::vulkan::loader {
   public:
+    /**
+     * @brief The derived implementation type of the adapted loader.
+     */
+    using implementation_type = internal::base::loader_impl;
+
     /**
      * @brief Construct a loader.
      */

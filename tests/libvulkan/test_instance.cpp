@@ -16,10 +16,10 @@
 using megatech::vulkan::bitmask;
 using megatech::vulkan::version;
 using megatech::vulkan::debug_messenger_description;
+using megatech::vulkan::instance;
+using megatech::vulkan::debug_instance;
 
 using megatech::vulkan::adaptors::libvulkan::loader;
-using megatech::vulkan::adaptors::libvulkan::instance;
-using megatech::vulkan::adaptors::libvulkan::debug_instance;
 using megatech::vulkan::physical_device_list;
 
 TEST_CASE("Instances should be initializable.", "[instance][adaptor-libvulkan]") {
@@ -85,8 +85,8 @@ TEST_CASE("Debug instances should be initializable.", "[instance][adaptor-libvul
         }
       }
     };
-    REQUIRE_NOTHROW(debug_instance{ ldr, { "test_instance", version{ 0, 1, 0, 0 } }, { "VK_LAYER_KHRONOS_validation" },
-                                  messenger_description});
+    REQUIRE_NOTHROW(debug_instance{ ldr, { "test_instance", version{ 0, 1, 0, 0 } }, messenger_description,
+                                    { "VK_LAYER_KHRONOS_validation" } });
   }
   {
     auto i = 0;
@@ -105,16 +105,16 @@ TEST_CASE("Debug instances should be initializable.", "[instance][adaptor-libvul
         }
       }
     };
-    auto inst = debug_instance{ ldr, { "test_instance", version{ 0, 1, 0, 0 } }, { "VK_LAYER_KHRONOS_validation" },
-                                messenger_description};
+    auto inst = debug_instance{ ldr, { "test_instance", version{ 0, 1, 0, 0 } }, messenger_description,
+                                { "VK_LAYER_KHRONOS_validation" } };
     inst.submit_debug_message(megatech::vulkan::debug_message_type::general_bit,
                               megatech::vulkan::debug_message_severity::verbose_bit, "Test Message Submission!");
     REQUIRE(i != 0);
   }
   {
     auto messenger_description = debug_messenger_description{ debug_log };
-    REQUIRE_NOTHROW(debug_instance{ ldr, { "test_instance", version{ 0, 1, 0, 0 } }, { "VK_LAYER_KHRONOS_validation" },
-                                  messenger_description});
+    REQUIRE_NOTHROW(debug_instance{ ldr, { "test_instance", version{ 0, 1, 0, 0 } }, messenger_description,
+                                    { "VK_LAYER_KHRONOS_validation" } });
   }
 }
 

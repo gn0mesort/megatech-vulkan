@@ -13,12 +13,6 @@
 
 #include "concepts/opaque_object.hpp"
 
-namespace megatech::vulkan::internal {
-
-  struct tag;
-
-}
-
 namespace megatech::vulkan::internal::base {
 
   class instance_impl;
@@ -170,9 +164,7 @@ namespace async_transfer_support {
   private:
     std::vector<physical_device_description> m_physical_devices;
 
-    physical_device_list(std::vector<physical_device_description>&& filtered_list);
-
-    bool is_valid(const physical_device_description& physical_device) const;
+    explicit physical_device_list(std::vector<physical_device_description>&& filtered_list);
   public:
     /**
      * @brief The type of value held by the physical_device_list.

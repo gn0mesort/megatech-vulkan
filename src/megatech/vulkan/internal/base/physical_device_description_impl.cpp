@@ -1,4 +1,3 @@
-/// @cond INTERNAL
 /**
  * @file physical_device_description_impl.cpp
  * @brief Physical Device Description Implementation
@@ -480,4 +479,3 @@ namespace megatech::vulkan::internal::base {
   }
 
 }
-/// @endcond

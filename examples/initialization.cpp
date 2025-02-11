@@ -33,7 +33,7 @@ void debug_sink(const mv::bitmask, const mv::bitmask severity, const std::string
 
 int main() {
   auto debugger = mv::debug_messenger_description{ debug_sink };
-  auto inst = mval::debug_instance{ mval::loader{ },  { }, { "VK_LAYER_KHRONOS_validation" }, debugger };
+  auto inst = mv::debug_instance{ mval::loader{ },  { }, debugger, { "VK_LAYER_KHRONOS_validation" } };
   auto physical_devices = mv::physical_device_list{ inst };
   if (physical_devices.empty())
   {

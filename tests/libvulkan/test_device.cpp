@@ -8,11 +8,11 @@
 using megatech::vulkan::bitmask;
 using megatech::vulkan::version;
 using megatech::vulkan::debug_messenger_description;
+using megatech::vulkan::debug_instance;
 using megatech::vulkan::physical_device_list;
 using megatech::vulkan::device;
 
 using megatech::vulkan::adaptors::libvulkan::loader;
-using megatech::vulkan::adaptors::libvulkan::debug_instance;
 
 TEST_CASE("Devices should be initializable.", "[device][adaptor-libvulkan]") {
   auto ldr = loader{ };
@@ -33,8 +33,8 @@ TEST_CASE("Devices should be initializable.", "[device][adaptor-libvulkan]") {
       }
     }
   };
-  auto inst = debug_instance{ ldr, { "test_device", version{ 0, 1, 0, 0 } }, { "VK_LAYER_KHRONOS_validation" },
-                              messenger_description };
+  auto inst = debug_instance{ ldr, { "test_device", version{ 0, 1, 0, 0 } }, messenger_description,
+                              { "VK_LAYER_KHRONOS_validation" } };
   auto physical_devices = physical_device_list{ inst };
   REQUIRE_NOTHROW(device{ physical_devices.front() });
   REQUIRE(validation_error_count == 0);

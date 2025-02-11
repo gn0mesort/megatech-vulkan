@@ -1,13 +1,71 @@
+/// @cond INTERNAL
+/**
+ * @file config.hpp
+ * @brief Compile-Time Configuration
+ * @author Alexander Rothman <[gnomesort@megate.ch](mailto:gnomesort@megate.ch)>
+ * @date 2025
+ */
 #ifndef CONFIG_HPP
 #define CONFIG_HPP
 
+/**
+ * @def CONFIG_VULKAN_ENGINE_NAME
+ * @brief The name of the library as a string constant. This is passed as part of VkApplicationInfo during instance
+ *        initialization.
+ * @details This should be "megatech-vulkan".
+ */
 #mesondefine CONFIG_VULKAN_ENGINE_NAME
+
+/**
+ * @def CONFIG_VULKAN_ENGINE_VERSION_MAJOR
+ * @brief The major project version. This is passed as part of VkApplicationInfo during instance initialization.
+ */
 #mesondefine CONFIG_VULKAN_ENGINE_VERSION_MAJOR
+
+/**
+ * @def CONFIG_VULKAN_ENGINE_VERSION_MINOR
+ * @brief The minor project version. This is passed as part of VkApplicationInfo during instance initialization.
+ */
 #mesondefine CONFIG_VULKAN_ENGINE_VERSION_MINOR
+
+/**
+ * @def CONFIG_VULKAN_ENGINE_VERSION_PATCH
+ * @brief The patch project version. This is passed as part of VkApplicationInfo during instance initialization.
+ */
 #mesondefine CONFIG_VULKAN_ENGINE_VERSION_PATCH
+
 #mesondefine CONFIG_COMPILER_GCC
 #mesondefine CONFIG_COMPILER_CLANG
 #mesondefine CONFIG_COMPILER_MSVC
 #mesondefine CONFIG_COMPILER_UNKNOWN
 
+#if defined(__DOXYGEN__) && defined(CONFIG_COMPILER_GCC)
+  /**
+   * @def CONFIG_COMPILER_GCC
+   * @brief This indicates that the project was compiled using GCC, when it is defined.
+   */
 #endif
+
+#if defined(__DOXYGEN__) && defined(CONFIG_COMPILER_CLANG)
+  /**
+   * @def CONFIG_COMPILER_CLANG
+   * @brief This indicates that the project was compiled using Clang, when it is defined.
+   */
+#endif
+
+#if defined(__DOXYGEN__) && defined(CONFIG_COMPILER_MSVC)
+  /**
+   * @def CONFIG_COMPILER_MSVC
+   * @brief This indicates that the project was compiled using Microsoft Visual C++, when it is defined.
+   */
+#endif
+
+#if defined(__DOXYGEN__) && defined(CONFIG_COMPILER_UNKNOWN)
+  /**
+   * @def CONFIG_COMPILER_CLANG
+   * @brief This indicates that the project was compiled using an unknown compiler, when it is defined.
+   */
+#endif
+
+#endif
+/// @endcond

@@ -9,7 +9,7 @@
 #define MEGATECH_VULKAN_INSTANCE_HPP
 
 #include <memory>
-#include <vector>
+#include <unordered_set>
 
 #include "bitmask.hpp"
 
@@ -24,7 +24,9 @@ namespace megatech::vulkan::internal::base {
 
 namespace megatech::vulkan {
 
-  class physical_device_description;
+  class loader;
+  class application_description;
+  class debug_messenger_description;
 
   /**
    * @brief A Vulkan instance.
@@ -49,6 +51,26 @@ namespace megatech::vulkan {
   public:
     /// @cond
     instance() = delete;
+    /// @endcond
+
+    /**
+     * @brief Construct an instance.
+     * @param parent The parent loader object.
+     * @param app_description A description of the application constructing the instance.
+     */
+    instance(const loader& parent, const application_description& app_description);
+
+    /**
+     * @brief Construct an instance.
+     * @param parent The parent loader object.
+     * @param app_description A description of the application constructing the instance.
+     * @param requested_layers A set of layers to enable. Each layer is only enabled if it is available. If a layer
+     *                         is unavailable it is ignored.
+     */
+    instance(const loader& parent, const application_description& app_description,
+             const std::unordered_set<std::string>& requested_layers);
+
+    /// @cond
     instance(const instance& other) = delete;
     instance(instance&& other) = delete;
     /// @endcond
@@ -109,6 +131,38 @@ namespace megatech::vulkan {
   public:
     /// @cond
     debug_instance() = delete;
+    /// @endcond
+
+    /**
+     * @brief Construct a debug_instance.
+     * @param parent The parent loader object.
+     * @param app_description A description of the application constructing the debug_instance.
+     */
+    debug_instance(const loader& parent, const application_description& app_description);
+
+    /**
+     * @brief Construct a debug_instance.
+     * @param parent The parent loader object.
+     * @param app_description A description of the application constructing the debug_instance.
+     * @param requested_layers A set of layers to enable. Each layer is only enabled if it is available. If a layer
+     *                         is unavailable it is ignored.
+     */
+    debug_instance(const loader& parent, const application_description& app_description,
+                   const std::unordered_set<std::string>& requested_layers);
+
+    /**
+     * @brief Construct a debug_instance.
+     * @param parent The parent loader object.
+     * @param app_description A description of the application constructing the debug_instance.
+     * @param messenger_description A description of a debug messenger to allocate during construction.
+     * @param requested_layers A set of layers to enable. Each layer is only enabled if it is available. If a layer
+     *                         is unavailable it is ignored.
+     */
+    debug_instance(const loader& parent, const application_description& app_description,
+                   const debug_messenger_description& messenger_description,
+                   const std::unordered_set<std::string>& requested_layers);
+
+    /// @cond
     debug_instance(const debug_instance& other) = delete;
     debug_instance(debug_instance&& other) = delete;
     /// @endcond
