@@ -1,0 +1,6 @@
+[submodule "subprojects/megatech-vulkan-dispatch"]
+	path = subprojects/megatech-vulkan-dispatch
+	url = git+ssh://github.com/gn0mesort/megatech-vulkan-dispatch
+[submodule "subprojects/megatech-assertions"]
+	path = subprojects/megatech-assertions
+	url = git+ssh://github.com/gn0mesort/megatech-assertions
