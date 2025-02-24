@@ -95,7 +95,7 @@ namespace megatech::vulkan {
     for (auto&& handle : handles)
     {
       using implementation_type = internal::base::physical_device_description_impl;
-      auto tmp = std::shared_ptr<implementation_type>{ parent->resolve_physical_device_description(handle) };
+      auto tmp = std::shared_ptr<implementation_type>{ new implementation_type{ parent, handle } };
       if (tmp->is_valid())
       {
         m_physical_devices.emplace_back(tmp);

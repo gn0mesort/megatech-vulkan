@@ -6,12 +6,12 @@
  * @copyright AGPL-3.0-or-later
  * @date 2025
  */
-#ifndef MEGATECH_VULKAN_ADAPTORS_LIBVULKAN_INTERNAL_BASE_LOADER_IMPL_HPP
-#define MEGATECH_VULKAN_ADAPTORS_LIBVULKAN_INTERNAL_BASE_LOADER_IMPL_HPP
+#ifndef MEGATECH_VULKAN_LOADERS_LIBVULKAN_INTERNAL_BASE_LOADER_IMPL_HPP
+#define MEGATECH_VULKAN_LOADERS_LIBVULKAN_INTERNAL_BASE_LOADER_IMPL_HPP
 
 #include <megatech/vulkan/internal/base/loader_impl.hpp>
 
-namespace megatech::vulkan::adaptors::libvulkan::internal::base {
+namespace megatech::vulkan::loaders::libvulkan::internal::base {
 
   /**
    * @brief An implementation of a loader that leverages libvulkan.1 (a/k/a libvulkan-1).

@@ -7,7 +7,7 @@
 
 #include <megatech/vulkan.hpp>
 #include <megatech/vulkan/dispatch.hpp>
-#include <megatech/vulkan/adaptors/libvulkan.hpp>
+#include <megatech/vulkan/loaders/libvulkan.hpp>
 #include <megatech/vulkan/internal/base.hpp>
 
 
@@ -32,18 +32,18 @@
   } \
   while (0)
 
-using megatech::vulkan::adaptors::libvulkan::loader;
+using megatech::vulkan::loaders::libvulkan::loader;
 
-TEST_CASE("Loaders should be default initializable.", "[loader][adaptor-libvulkan]") {
+TEST_CASE("Loaders should be default initializable.", "[loader][loader-libvulkan]") {
   REQUIRE_NOTHROW(loader{ });
 }
 
-TEST_CASE("Loaders should have a shareable implementation pointer.", "[loader][adaptor-libvulkan]") {
+TEST_CASE("Loaders should have a shareable implementation pointer.", "[loader][loader-libvulkan]") {
   const auto ldr = loader{ };
   REQUIRE(ldr.share_implementation() != nullptr);
 }
 
-TEST_CASE("Loaders should be able to retrieve a list of Vulkan layers for the client.", "[loader][adaptor-libvulkan]") {
+TEST_CASE("Loaders should be able to retrieve a list of Vulkan layers for the client.", "[loader][loader-libvulkan]") {
   using megatech::vulkan::version;
   const auto ldr = loader{ };
   auto vk_layers = std::vector<VkLayerProperties>{ };

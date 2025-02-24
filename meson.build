@@ -63,8 +63,9 @@ sources = [
         'src/megatech/vulkan/application_description.cpp', 'src/megatech/vulkan/debug_messenger_description.cpp',
         'src/megatech/vulkan/layer_description.cpp', 'src/megatech/vulkan/loader.cpp',
         'src/megatech/vulkan/instance.cpp', 'src/megatech/vulkan/physical_devices.cpp',
-        'src/megatech/vulkan/device.cpp'),
+        'src/megatech/vulkan/device.cpp', 'src/megatech/vulkan/window_system.cpp'),
   files('src/megatech/vulkan/internal/base/loader_impl.cpp',
+        'src/megatech/vulkan/internal/base/window_system_impl.cpp',
         'src/megatech/vulkan/internal/base/instance_impl.cpp',
         'src/megatech/vulkan/internal/base/physical_device_description_impl.cpp',
         'src/megatech/vulkan/internal/base/device_impl.cpp'),
@@ -73,38 +74,25 @@ sources = [
 megatech_vulkan_lib = library(meson.project_name(), sources, include_directories: includes,
                               dependencies: dependencies, version: version)
 megatech_vulkan_dep = declare_dependency(link_with: megatech_vulkan_lib, include_directories: includes)
-dependencies = [
-  vulkan_dep,
-  megatech_vulkan_dispatch_dep,
-  megatech_vulkan_dep
-]
-sources = [
-  files('src/megatech/vulkan/adaptors/libvulkan/loader.cpp'),
-  files('src/megatech/vulkan/adaptors/libvulkan/internal/base/loader_impl.cpp')
-]
-megatech_vulkan_adaptor_libvulkan_lib = library('@0@-adaptor-@1@'.format(meson.project_name(), 'libvulkan'), sources,
-                                                include_directories: includes, dependencies: dependencies,
-                                                version: version)
-megatech_vulkan_adaptor_libvulkan_dep = declare_dependency(link_with: megatech_vulkan_adaptor_libvulkan_lib,
-                                                           include_directories: includes)
-subdir('tests')
+doc_inputs = [ meson.current_source_dir() / 'include', config_header.full_path(),
+               meson.current_source_dir() / 'documentation' ]
+doc_strips = [ meson.current_build_dir(), meson.current_source_dir() / 'include' ]
+subdir('loaders')
 subdir('examples')
 doxygen = find_program('doxygen', disabler: true)
 doc_env = environment()
 doc_env.set('DOXYGEN_PROJECT_NAME', meson.project_name())
 doc_env.set('DOXYGEN_PROJECT_NUMBER', meson.project_version())
 doc_env.set('DOXYGEN_OUTPUT_DIRECTORY', meson.current_build_dir() / 'documentation')
-readme = files('README.md')
-doc_inputs = [ meson.current_source_dir() / 'include', config_header.full_path(),
-               readme[0].full_path(), meson.current_source_dir() / 'documentation' ]
-doc_env.set('DOXYGEN_USE_MDFILE_AS_MAINPAGE', readme[0].full_path())
+readme = files('README.md')[0]
+doc_inputs += readme.full_path()
+doc_env.set('DOXYGEN_USE_MDFILE_AS_MAINPAGE', readme.full_path())
 doc_env.set('DOXYGEN_INPUT', ' '.join(doc_inputs))
-doc_strips = [ meson.current_build_dir(), meson.current_source_dir() / 'include' ]
 doc_env.set('DOXYGEN_STRIP_FROM_PATH', ' '.join(doc_strips))
 extra_css = files('documentation/extra.css')[0]
 doc_env.set('DOXYGEN_HTML_EXTRA_STYLESHEET', extra_css.full_path())
 doc_env.set('DOXYGEN_ENABLED_SECTIONS', ' '.join(get_option('enabled_doxygen_sections')))
-doc_defines = [ 'VK_VERSION_1_0=1', '__DOXYGEN__=1' ]
+doc_defines = [ '__DOXYGEN__=1' ]
 doc_env.set('DOXYGEN_PREDEFINED', ' '.join(doc_defines))
 docs = custom_target(output: 'documentation', build_always_stale: true,
                      command: [ doxygen, files('Doxyfile') ], env: doc_env)

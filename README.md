@@ -14,18 +14,18 @@ boilerplate. The basic approach looks like this:
 
 ```cpp
 #include <megatech/vulkan.hpp>
-#include <megatech/vulkan/adaptors/libvulkan.hpp>
+#include <megatech/vulkan/loaders/libvulkan.hpp>
 
 namespace mv = megatech::vulkan;
 
 // An adaptor is needed to ensure the correct features and extensions are enabled.
 // The libvulkan adaptor dynamically links libvulkan and enables only the core features required by Megatech-Vulkan.
 // It doesn't support any window system integration.
-namespace adaptor = mv::adaptors::libvulkan;
+namespace libvulkan = mv::loaders::libvulkan;
 
 int main() {
   // Initialize a Vulkan instance.
-  auto instance = mv::instance{ adaptor::loader{ }, { "My application", { 0, 1, 0, 0 } } };
+  auto instance = mv::instance{ libvulkan::loader{ }, { "My application", { 0, 1, 0, 0 } } };
   // Enumerate physical devices and ensure that there is a valid device
   auto physical_devices = mv::physical_device_list{ instance };
   if (physical_devices.empty())

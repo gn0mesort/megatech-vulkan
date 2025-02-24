@@ -16,7 +16,6 @@
 
 #include <megatech/vulkan/dispatch/tables.hpp>
 
-#include "../../defs.hpp"
 #include "../../debug_messenger_description.hpp"
 #include "../../instance.hpp"
 
@@ -139,26 +138,12 @@ namespace megatech::vulkan::internal::base {
      * @return A read-only reference to a set of Vulkan extensions.
      */
     const std::unordered_set<std::string>& enabled_extensions() const;
-
-    /**
-     * @brief Resolve a physical_device_description_impl.
-     * @details This method resolves the type of created physical_device_description implementations. The default
-     *          behavior is to return a default megatech::vulkan::internal::base::physical_device_description_impl.
-     *          Adaptors that define extended description types should override this to return the extended
-     *          implementation type instead.
-     * @param physical_device The VkPhysicalDevice handle that identifies the device to describe. This must not be
-     *                        VK_NULL_HANDLE.
-     * @return A pointer to a new physical_device_description_impl. The caller is responsible for managing the
-     *         pointer's lifetime.
-     */
-    virtual physical_device_description_impl*
-    resolve_physical_device_description(const VkPhysicalDevice physical_device) const;
   };
 
   /**
    * @brief The implementation of a megatech::vulkan::debug_instance.
    */
-  class debug_instance_impl : public instance_impl {
+  class debug_instance_impl final : public instance_impl {
   private:
     VkDebugUtilsMessengerEXT m_debug_utils_messenger{ VK_NULL_HANDLE };
     std::function<debug_messenger_description::message_sink_fn> m_message_sink{ };
@@ -231,7 +216,7 @@ namespace megatech::vulkan::internal::base {
     /**
      * @brief Destroy a debug_instance_impl.
      */
-    virtual ~debug_instance_impl() noexcept;
+    ~debug_instance_impl() noexcept;
 
     /// @cond
     debug_instance_impl& operator=(const debug_instance_impl& rhs) = delete;

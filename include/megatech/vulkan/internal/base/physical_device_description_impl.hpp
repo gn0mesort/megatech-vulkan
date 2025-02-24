@@ -28,7 +28,7 @@ namespace megatech::vulkan::internal::base {
    *          physical_device_allocator. It should be enough to provide an extended constructor to configure the
    *          requirements of the derived devices.
    */
-  class physical_device_description_impl {
+  class physical_device_description_impl final {
   private:
     std::shared_ptr<const instance_impl> m_parent{ };
     VkPhysicalDevice m_handle{ };
@@ -52,78 +52,6 @@ namespace megatech::vulkan::internal::base {
     VkPhysicalDeviceVulkan12Features m_required_features_1_2{ };
     VkPhysicalDeviceVulkan13Features m_required_features_1_3{ };
     VkPhysicalDeviceDynamicRenderingLocalReadFeaturesKHR m_required_dynamic_rendering_local_read_features{ };
-  protected:
-    /**
-     * @brief Manually set the physical_device_description_impl's selected queue families.
-     * @details This should only be called by constructors in derived types. Any queue family can be set to -1 to
-     *          indicate that it isn't valid.
-     * @param primary The primary queue family. This must be less than the number of available queue families.
-     * @param compute The asynchronous compute queue family. This must be less than the number of available queue
-     *                families.
-     * @param transfer The asynchronous transfer queue family. This must be less than the number of available queues.
-     */
-    void set_queue_families(const std::int64_t primary, const std::int64_t compute, const std::int64_t transfer);
-
-    /**
-     * @brief Add a required Vulkan device extension to the physical_device_description_impl's set of required
-     *        extensions.
-     * @details It is up to adaptor implementors to discover and resolve optional extensions. In short, check if
-     *          the optional extension is in available_extensions() and then require it if it is.
-     * @param extension The name of the extension to require. Empty strings are ignored.
-     */
-    void add_required_extension(const std::string& extension);
-
-    /**
-     * @brief Add required Vulkan 1.0 features to the physical_device_description_impl.
-     * @details Features are always merged. You cannot disable base requirements using this method.
-     * @param features A feature object to merge into the base required features.
-     */
-    void require_1_0_features(const VkPhysicalDeviceFeatures& features);
-
-    /**
-     * @brief Add required Vulkan 1.1 features to the physical_device_description_impl.
-     * @details Features are always merged. You cannot disable base requirements using this method.
-     * @param features A feature object to merge into the base required features.
-     */
-    void require_1_1_features(const VkPhysicalDeviceVulkan11Features& features);
-
-    /**
-     * @brief Add required Vulkan 1.2 features to the physical_device_description_impl.
-     * @details Features are always merged. You cannot disable base requirements using this method.
-     * @param features A feature object to merge into the base required features.
-     */
-    void require_1_2_features(const VkPhysicalDeviceVulkan12Features& features);
-
-    /**
-     * @brief Add required Vulkan 1.3 features to the physical_device_description_impl.
-     * @details Features are always merged. You cannot disable base requirements using this method.
-     * @param features A feature object to merge into the base required features.
-     */
-    void require_1_3_features(const VkPhysicalDeviceVulkan13Features& features);
-
-    /**
-     * @brief Add an extended set of Vulkan feature objects to the physical_device_description_impl's required
-     *        features.
-     * @details This is a strictly non-owning operation. The pointer is appended to the pNext chain of the required
-     *          feature object naively. All of the pointed-to objects in the extended chain must have their lifetimes
-     *          controlled by the extended class. They must share the same lifetime as the
-     *          physical_device_description_impl.
-     * @param next A pointer to a pNext chain for VkPhysicalDeviceFeatures2. This must not contain any feature object
-     *             already in the chain. This means it cannot contain VkPhysicalDeviceVulkan11Features,
-     *             VkPhysicalDeviceVulkan12Features, VkPhysicalDeviceVulkan13Features, or
-     *             VkPhysicalDeviceDynamicRenderingLocalReadFeaturesKHR. It also cannot contain any feature object
-     *             that is mutually exclusive with those objects. Passing nullptr will clear the extended pointer
-     *             chain.
-     */
-    void append_extended_feature_chain(void *const next);
-
-    /**
-     * @brief Validate the availability of extended features in the physical_device_description_impl.
-     * @details Adaptor implementors who need to use append_extended_feature_chain should override this. The
-     *          default implementation always returns true. This is called by is_valid.
-     * @return True if all of the extended features are available. False otherwise.
-     */
-    virtual bool has_extended_features() const;
   public:
     /**
      * @brief The type of Vulkan handle owned by the physical_device_description_impl.
@@ -155,7 +83,7 @@ namespace megatech::vulkan::internal::base {
     /**
      * @brief Destroy a physical_device_description_impl.
      */
-    virtual ~physical_device_description_impl() noexcept = default;
+    ~physical_device_description_impl() noexcept = default;
 
     /// @cond
     physical_device_description_impl& operator=(const physical_device_description_impl& rhs) = delete;

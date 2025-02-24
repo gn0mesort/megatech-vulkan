@@ -113,7 +113,7 @@ namespace {
     }
     return std::bit_cast<Feature>(a_arr);
   }
-
+#if 0
   VkPhysicalDeviceFeatures featuremerge(const VkPhysicalDeviceFeatures& a, const VkPhysicalDeviceFeatures& b) {
     auto a_arr = std::bit_cast<basic_feature_array>(a);
     const auto b_arr = std::bit_cast<basic_feature_array>(b);
@@ -122,11 +122,11 @@ namespace {
     }
     return std::bit_cast<VkPhysicalDeviceFeatures>(a_arr);
   }
-
+#endif
 }
 
 namespace megatech::vulkan::internal::base {
-
+#if 0
   void physical_device_description_impl::set_queue_families(const std::int64_t primary, const std::int64_t compute,
                                                             const std::int64_t transfer) {
     if (primary > static_cast<std::int64_t>(m_queue_family_properties.size()) ||
@@ -175,6 +175,7 @@ namespace megatech::vulkan::internal::base {
   bool physical_device_description_impl::has_extended_features() const {
     return true;
   }
+#endif
 
   physical_device_description_impl::physical_device_description_impl(std::shared_ptr<const parent_type> parent,
                                                                      VkPhysicalDevice handle) :
@@ -452,8 +453,7 @@ namespace megatech::vulkan::internal::base {
            featurecmp(m_features_1_1, m_required_features_1_1) &&
            featurecmp(m_features_1_2, m_required_features_1_2) &&
            featurecmp(m_features_1_3, m_required_features_1_3) &&
-           featurecmp(m_dynamic_rendering_local_read_features, m_required_dynamic_rendering_local_read_features) &&
-           has_extended_features();
+           featurecmp(m_dynamic_rendering_local_read_features, m_required_dynamic_rendering_local_read_features);
   }
 
   const std::unordered_set<std::string>& physical_device_description_impl::required_extensions() const {

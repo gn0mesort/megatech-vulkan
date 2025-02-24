@@ -21,10 +21,10 @@
 namespace megatech::vulkan::internal::base {
 
   loader_impl::loader_impl(const PFN_vkGetInstanceProcAddr pfn) {
-    set_loader_pfn(pfn);
+    store_loader_pfn(pfn);
   }
 
-  void loader_impl::set_loader_pfn(const PFN_vkGetInstanceProcAddr pfn) {
+  void loader_impl::store_loader_pfn(const PFN_vkGetInstanceProcAddr pfn) {
     MEGATECH_PRECONDITION(pfn != nullptr);
     MEGATECH_PRECONDITION(m_gdt == nullptr);
     if (m_gdt)
@@ -74,6 +74,12 @@ namespace megatech::vulkan::internal::base {
     MEGATECH_POSTCONDITION(m_available_extensions.contains(""));
   }
 
+  PFN_vkGetInstanceProcAddr loader_impl::retrieve_loader_pfn() const {
+    MEGATECH_PRECONDITION(m_gdt != nullptr);
+    DECLARE_GLOBAL_PFN(*m_gdt, vkGetInstanceProcAddr);
+    return vkGetInstanceProcAddr;
+  }
+
   const dispatch::global::table& loader_impl::dispatch_table() const {
     MEGATECH_PRECONDITION(m_gdt != nullptr);
     return *m_gdt;
@@ -96,43 +102,6 @@ namespace megatech::vulkan::internal::base {
       throw error{ "Extensions can only be queried for layers that are available to the loader." };
     }
     return m_available_extensions.at(layer);
-  }
-
-  instance_impl* loader_impl::resolve_instance(const application_description& app_description,
-                                               const std::unordered_set<std::string>& requested_layers) const {
-    MEGATECH_PRECONDITION(m_gdt != nullptr);
-    auto weak = weak_from_this();
-    if (weak.expired())
-    {
-      throw error{ "The loader implementation isn't managed by a shared pointer." };
-    }
-    return new instance_impl{ weak.lock(), app_description, requested_layers };
-  }
-
-  debug_instance_impl*
-  loader_impl::resolve_debug_instance(const application_description& app_description,
-                                      const std::unordered_set<std::string>& requested_layers) const {
-    MEGATECH_PRECONDITION(m_gdt != nullptr);
-    auto weak = weak_from_this();
-    if (weak.expired())
-    {
-      throw error{ "The loader implementation isn't managed by a shared pointer." };
-    }
-    return new debug_instance_impl{ weak.lock(), app_description, requested_layers };
-  }
-
-
-  debug_instance_impl*
-  loader_impl::resolve_debug_instance(const application_description& app_description,
-                                      const debug_messenger_description& messenger_description,
-                                     const std::unordered_set<std::string>& requested_layers) const {
-    MEGATECH_PRECONDITION(m_gdt != nullptr);
-    auto weak = weak_from_this();
-    if (weak.expired())
-    {
-      throw error{ "The loader implementation isn't managed by a shared pointer." };
-    }
-    return new debug_instance_impl{ weak.lock(), app_description, messenger_description, requested_layers };
   }
 
 }

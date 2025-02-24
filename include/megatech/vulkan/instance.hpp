@@ -115,7 +115,7 @@ namespace megatech::vulkan {
    *          This allows them to generate diagnostic messages from VK_LAYER_KHRONOS_validation, and to provide
    *          extra information to specialized debuggers like RenderDoc.
    */
-  class debug_instance : public instance {
+  class debug_instance final : public instance {
   public:
     /**
      * @brief The extended internal implementation type of the debug_instance.
@@ -170,7 +170,7 @@ namespace megatech::vulkan {
     /**
      * @brief Destroy a debug_instance.
      */
-    virtual ~debug_instance() = default;
+    ~debug_instance() = default;
 
     /// @cond
     debug_instance& operator=(const debug_instance& rhs) = delete;

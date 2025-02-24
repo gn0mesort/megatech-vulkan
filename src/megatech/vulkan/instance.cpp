@@ -29,7 +29,7 @@ namespace megatech::vulkan {
 
   instance::instance(const loader& parent, const application_description& app_description,
                      const std::unordered_set<std::string>& requested_layers) :
-  m_impl{ parent.implementation().resolve_instance(app_description, requested_layers) } {
+  m_impl{ new implementation_type{ parent.share_implementation(), app_description, requested_layers } } {
     MEGATECH_POSTCONDITION(m_impl != nullptr);
   }
 
@@ -56,17 +56,17 @@ namespace megatech::vulkan {
 
   debug_instance::debug_instance(const loader& parent, const application_description& app_description,
                                  const std::unordered_set<std::string>& requested_layers) :
-  instance{ std::shared_ptr<extended_implementation_type>{ parent.implementation()
-                                                                 .resolve_debug_instance(app_description,
-                                                                                         requested_layers) } } { }
+  debug_instance{ std::shared_ptr<extended_implementation_type>{
+    new extended_implementation_type{ parent.share_implementation(), app_description, requested_layers }
+  } } { }
 
   debug_instance::debug_instance(const loader& parent, const application_description& app_description,
                                  const debug_messenger_description& messenger_description,
                                  const std::unordered_set<std::string>& requested_layers) :
-  instance{ std::shared_ptr<extended_implementation_type>{ parent.implementation()
-                                                                 .resolve_debug_instance(app_description,
-                                                                                         messenger_description,
-                                                                                         requested_layers) } } { }
+  debug_instance{ std::shared_ptr<extended_implementation_type>{
+    new extended_implementation_type{ parent.share_implementation(), app_description, messenger_description,
+                                      requested_layers }
+  } } { }
 
   void debug_instance::submit_debug_message(const bitmask types, const bitmask severity,
                                             const std::string& message) const {

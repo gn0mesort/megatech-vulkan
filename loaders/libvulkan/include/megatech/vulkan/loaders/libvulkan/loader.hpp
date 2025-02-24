@@ -1,22 +1,22 @@
 /**
  * @file loader.hpp
- * @brief Standard Vulkan Loaders
+ * @brief Standard Vulkan Loader
  * @author Alexander Rothman <[gnomesort@megate.ch](mailto:gnomesort@megate.ch)>
  * @copyright AGPL-3.0-or-later
  * @date 2025
  */
-#ifndef MEGATECH_VULKAN_ADAPTORS_LIBVULKAN_LOADER_HPP
-#define MEGATECH_VULKAN_ADAPTORS_LIBVULKAN_LOADER_HPP
+#ifndef MEGATECH_VULKAN_LOADERS_LIBVULKAN_LOADER_HPP
+#define MEGATECH_VULKAN_LOADERS_LIBVULKAN_LOADER_HPP
 
 #include <megatech/vulkan/loader.hpp>
 
-namespace megatech::vulkan::adaptors::libvulkan::internal::base {
+namespace megatech::vulkan::loaders::libvulkan::internal::base {
 
   class loader_impl;
 
 }
 
-namespace megatech::vulkan::adaptors::libvulkan {
+namespace megatech::vulkan::loaders::libvulkan {
 
   /**
    * @brief A loader using libvulkan as its underlying implementation.

@@ -9,7 +9,7 @@
 
 #include <megatech/vulkan.hpp>
 #include <megatech/vulkan/dispatch.hpp>
-#include <megatech/vulkan/adaptors/libvulkan.hpp>
+#include <megatech/vulkan/loaders/libvulkan.hpp>
 #include <megatech/vulkan/internal/base.hpp>
 
 
@@ -19,22 +19,22 @@ using megatech::vulkan::debug_messenger_description;
 using megatech::vulkan::instance;
 using megatech::vulkan::debug_instance;
 
-using megatech::vulkan::adaptors::libvulkan::loader;
+using megatech::vulkan::loaders::libvulkan::loader;
 using megatech::vulkan::physical_device_list;
 
-TEST_CASE("Instances should be initializable.", "[instance][adaptor-libvulkan]") {
+TEST_CASE("Instances should be initializable.", "[instance][loader-libvulkan]") {
   auto ldr = loader{ };
   REQUIRE_NOTHROW(instance{ ldr, { "test_instance", version{ 0, 1, 0, 0 } } });
   REQUIRE_NOTHROW(instance{ ldr, { "test_instance", version{ 0, 1, 0, 0 } }, { "VK_LAYER_KHRONOS_null" } });
 }
 
-TEST_CASE("Physical device lists should be initializable from a complete instance object.", "[instance][adaptor-libvulkan]") {
+TEST_CASE("Physical device lists should be initializable from a complete instance object.", "[instance][loader-libvulkan]") {
   auto ldr = loader{ };
   auto inst = instance{ ldr, { "test_instance", version{ 0, 1, 0, 0 } } };
   REQUIRE_NOTHROW(physical_device_list{ inst });
 }
 
-TEST_CASE("Physical devices should all have primary queues.", "[instance][adaptor-libvulkan]") {
+TEST_CASE("Physical devices should all have primary queues.", "[instance][loader-libvulkan]") {
   auto ldr = loader{ };
   auto inst = instance{ ldr, { "test_instance", version{ 0, 1, 0, 0 } } };
   auto physical_devices = physical_device_list{ inst };
@@ -44,7 +44,7 @@ TEST_CASE("Physical devices should all have primary queues.", "[instance][adapto
   }
 }
 
-TEST_CASE("Physical devices should be filterable.", "[instance][adaptor-libvulkan]") {
+TEST_CASE("Physical devices should be filterable.", "[instance][loader-libvulkan]") {
   auto ldr = loader{ };
   auto inst = instance{ ldr, { "test_instance", version{ 0, 1, 0, 0 } } };
   auto physical_devices = physical_device_list{ inst };
@@ -65,7 +65,7 @@ void debug_log(const bitmask, const bitmask severity, const std::string& message
   }
 }
 
-TEST_CASE("Debug instances should be initializable.", "[instance][adaptor-libvulkan]") {
+TEST_CASE("Debug instances should be initializable.", "[instance][loader-libvulkan]") {
   auto ldr = loader{ };
   REQUIRE_NOTHROW(debug_instance{ ldr, { "test_instance", version{ 0, 1, 0, 0 } } });
   REQUIRE_NOTHROW(debug_instance{ ldr, { "test_instance", version{ 0, 1, 0, 0 } }, { "VK_LAYER_KHRONOS_validation" } });
@@ -118,14 +118,14 @@ TEST_CASE("Debug instances should be initializable.", "[instance][adaptor-libvul
   }
 }
 
-TEST_CASE("Debug instances should act as if they are regular instances.", "[instance][adaptor-libvulkan]") {
+TEST_CASE("Debug instances should act as if they are regular instances.", "[instance][loader-libvulkan]") {
   auto ldr = loader{ };
   auto inst = debug_instance{ ldr, { "test_instance", version{ 0, 1, 0, 0 } } };
   auto physical_devices = physical_device_list{ inst };
   REQUIRE_NOTHROW(std::views::filter([](auto& v){ return v.supports_rendering(); }));
 }
 
-TEST_CASE("Instance ownership chains should ensure parent object lifetimes.", "[instance][adaptor-libvulkan]") {
+TEST_CASE("Instance ownership chains should ensure parent object lifetimes.", "[instance][loader-libvulkan]") {
   auto* physical_devices = static_cast<physical_device_list*>(nullptr);
   auto loader_ptr = std::weak_ptr<const megatech::vulkan::internal::base::loader_impl>{ };
   auto instance_ptr = std::weak_ptr<const megatech::vulkan::internal::base::instance_impl>{ };
@@ -148,7 +148,7 @@ TEST_CASE("Instance ownership chains should ensure parent object lifetimes.", "[
   REQUIRE(instance_ptr.use_count() == 0);
 }
 
-TEST_CASE("Physical Devices should never return a queue family index greater than the number of queues available", "[instance][adaptor-libvulkan]") {
+TEST_CASE("Physical Devices should never return a queue family index greater than the number of queues available", "[instance][loader-libvulkan]") {
   auto ldr = loader{ };
   auto inst = instance{ ldr, { "test_instance", version{ 0, 1, 0, 0 } } };
   auto physical_devices = physical_device_list{ inst };

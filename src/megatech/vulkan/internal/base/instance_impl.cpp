@@ -172,20 +172,11 @@ namespace megatech::vulkan::internal::base {
     return m_enabled_extensions;
   }
 
-  physical_device_description_impl*
-  instance_impl::resolve_physical_device_description(const VkPhysicalDevice physical_device) const {
-    auto weak = weak_from_this();
-    if (weak.expired())
-    {
-      throw error{ "The instance implementation isn't managed by a shared pointer." };
-    }
-    return new physical_device_description_impl{ weak.lock(), physical_device };
-  }
-
   debug_instance_impl::debug_instance_impl(const std::shared_ptr<const parent_type>& parent) :
   instance_impl{ parent } { }
 
-  debug_instance_impl::debug_instance_impl(const std::shared_ptr<const parent_type>& parent, const debug_messenger_description& messenger_description) :
+  debug_instance_impl::debug_instance_impl(const std::shared_ptr<const parent_type>& parent,
+                                           const debug_messenger_description& messenger_description) :
   instance_impl{ parent },
   m_message_sink{ messenger_description.sink() } {
     MEGATECH_POSTCONDITION(m_message_sink != nullptr);
@@ -219,7 +210,7 @@ namespace megatech::vulkan::internal::base {
         layers.insert(layer);
       }
     }
-    auto extensions = std::unordered_set<std::string>{ "VK_EXT_debug_utils" };
+    auto extensions = std::unordered_set<std::string>{ VK_EXT_DEBUG_UTILS_EXTENSION_NAME };
     create_instance(app_description, layers, extensions, nullptr);
   }
 
@@ -244,7 +235,7 @@ namespace megatech::vulkan::internal::base {
         layers.insert(layer);
       }
     }
-    auto extensions = std::unordered_set<std::string>{ "VK_EXT_debug_utils" };
+    auto extensions = std::unordered_set<std::string>{ VK_EXT_DEBUG_UTILS_EXTENSION_NAME };
     create_instance(app_description, layers, extensions, &debug_utils_messenger_info);
     create_debug_messenger(debug_utils_messenger_info);
   }

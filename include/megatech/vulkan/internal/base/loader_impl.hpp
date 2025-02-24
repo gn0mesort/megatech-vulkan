@@ -34,7 +34,7 @@ namespace megatech::vulkan::internal::base {
   /**
    * @brief An implementation of megatech::vulkan::loader.
    */
-  class loader_impl : public std::enable_shared_from_this<loader_impl> {
+  class loader_impl {
   private:
     std::unique_ptr<dispatch::global::table> m_gdt{ };
     std::unordered_set<layer_description> m_available_layers{ };
@@ -48,20 +48,31 @@ namespace megatech::vulkan::internal::base {
 
     /**
      * @brief Construct a loader_impl.
-     * @details This is a simple solution for loader implementations that do not need specialized behavior at
-     *          construction to acquire vkGetInstanceProcAddr. Adaptors that acquire the loader function prior to
-     *          run-time, or as part of program loading can use this constructor to simplify implementation.
-     * @param pfn A pointer to the base vkGetInstanceProcAddr function for the loader to use. This must not be null.
+     * @details This is a simple solution for implementations that do not need any specialized management of their
+     *          loader function. If you need to explicitly manage the lifetime of your loader function, use
+     *          ::store_loader_pfn instead.
+     * @param pfn A pointer to the base vkGetInstanceProcAddr function for the loader_impl to use. This must not be
+     *            null.
      */
     explicit loader_impl(const PFN_vkGetInstanceProcAddr pfn);
 
     /**
-     * @brief Set the loader_impl's vkGetInstanceProcAddr function pointer.
-     * @details This should only be called once in a constructor. It should never be called elsewhere. Adaptors are
-     *          responsible for the lifetime of the function pointer.
-     * @param pfn A pointer to the base vkGetInstanceProcAddr function for the loader to use. This must not be null.
+     * @brief Store the loader_impl's vkGetInstanceProcAddr function pointer.
+     * @details This must be called during construction. The stored pointer must remain valid for the lifetime of the
+     *          loader_impl, and it is the caller's responsibility to manage it. It is unsafe to release the pointer
+     *          outside of the loader_impl's destructor.
+     * @param pfn A pointer to the base vkGetInstanceProcAddr function for the loader_impl to use. This must not be
+     *            null.
      */
-    void set_loader_pfn(const PFN_vkGetInstanceProcAddr pfn);
+    void store_loader_pfn(const PFN_vkGetInstanceProcAddr pfn);
+
+    /**
+     * @brief Retrieve the loader_impl's vkGetInstaceProcAddr function pointer.
+     * @details This is useful to prevent needing two copies of the vkGetInstanceProcAddr pointer. Instead of keeping
+     *          a separate record, you can use this to retrieve the previously stored pointer during destruction.
+     * @return The pointer that the loader_impl was initialized with.
+     */
+    PFN_vkGetInstanceProcAddr retrieve_loader_pfn() const;
   public:
     /// @cond
     loader_impl(const loader_impl& other) = delete;
@@ -108,49 +119,6 @@ namespace megatech::vulkan::internal::base {
      * @return A read-only reference to a set of Vulkan extension names.
      */
     const std::unordered_set<std::string>& available_instance_extensions(const std::string& layer) const;
-
-    /**
-     * @brief Resolve an instance_impl.
-     * @details This method resolves the type of created instance implementations. The default behavior is to return
-     *          a default megatech::vulkan::internal::base::instance_impl. Adaptors that define extended instance types
-     *          should override this to return the extended implementation type instead.
-     * @param app_description A description of the client application to pass to the underlying Vulkan implementation.
-     * @param requested_layers A set of layers to enable. Each layer is only enabled if it is available. If a layer
-     *                         is unavailable it is ignored.
-     * @return A pointer to a new instance_impl. The caller is responsible for managing the pointer's lifetime.
-     */
-    virtual instance_impl* resolve_instance(const application_description& app_description,
-                                            const std::unordered_set<std::string>& requested_layers) const;
-
-    /**
-     * @brief Resolve a debug_instance_impl.
-     * @details This method resolves the type of created debug_instance implementations. The default behavior is to
-     *          return a default megatech::vulkan::internal::base::debug_instance_impl. Adaptors that define extended
-     *          instance types should override this to return the extended implementation type instead.
-     * @param app_description A description of the client application to pass to the underlying Vulkan implementation.
-     * @param requested_layers A set of layers to enable. Each layer is only enabled if it is available. If a layer
-     *                         is unavailable it is ignored.
-     * @return A pointer to a new debug_instance_impl. The caller is responsible for managing the pointer's lifetime.
-     */
-    virtual debug_instance_impl* resolve_debug_instance(const application_description& app_description,
-                                                        const std::unordered_set<std::string>& requested_layers) const;
-
-    /**
-     * @brief Resolve a debug_instance_impl.
-     * @details This method resolves the type of created debug_instance implementations. The default behavior is to
-     *          return a default megatech::vulkan::internal::base::debug_instance_impl. Adaptors that define extended
-     *          instance types should override this to return the extended implementation type instead.
-     * @param app_description A description of the client application to pass to the underlying Vulkan implementation.
-     * @param messenger_description A description of a debug messenger that will be constructed alongside the
-     *                              underlying Vulkan instance. Dependencies of the messenger description must have
-     *                              a longer lifetime than the underlying instance.
-     * @param requested_layers A set of layers to enable. Each layer is only enabled if it is available. If a layer
-     *                         is unavailable it is ignored.
-     * @return A pointer to a new debug_instance_impl. The caller is responsible for managing the pointer's lifetime.
-     */
-    virtual debug_instance_impl* resolve_debug_instance(const application_description& app_description,
-                                                        const debug_messenger_description& messenger_description,
-                                                        const std::unordered_set<std::string>& requested_layers) const;
   };
 
 }

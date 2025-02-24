@@ -1,10 +1,10 @@
 #include <iostream>
 
 #include <megatech/vulkan.hpp>
-#include <megatech/vulkan/adaptors/libvulkan.hpp>
+#include <megatech/vulkan/loaders/libvulkan.hpp>
 
 namespace mv = megatech::vulkan;
-namespace mval = megatech::vulkan::adaptors::libvulkan;
+namespace mvll = megatech::vulkan::loaders::libvulkan;
 
 template <typename OutputStream>
 OutputStream& insert_severity(OutputStream&& out, const mv::bitmask severity) {
@@ -33,7 +33,7 @@ void debug_sink(const mv::bitmask, const mv::bitmask severity, const std::string
 
 int main() {
   auto debugger = mv::debug_messenger_description{ debug_sink };
-  auto inst = mv::debug_instance{ mval::loader{ },  { }, debugger, { "VK_LAYER_KHRONOS_validation" } };
+  auto inst = mv::debug_instance{ mvll::loader{ },  { }, debugger, { "VK_LAYER_KHRONOS_validation" } };
   auto physical_devices = mv::physical_device_list{ inst };
   if (physical_devices.empty())
   {

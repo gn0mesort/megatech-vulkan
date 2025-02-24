@@ -3,7 +3,7 @@
 #include <catch2/catch_all.hpp>
 
 #include <megatech/vulkan.hpp>
-#include <megatech/vulkan/adaptors/libvulkan.hpp>
+#include <megatech/vulkan/loaders/libvulkan.hpp>
 
 using megatech::vulkan::bitmask;
 using megatech::vulkan::version;
@@ -12,9 +12,9 @@ using megatech::vulkan::debug_instance;
 using megatech::vulkan::physical_device_list;
 using megatech::vulkan::device;
 
-using megatech::vulkan::adaptors::libvulkan::loader;
+using megatech::vulkan::loaders::libvulkan::loader;
 
-TEST_CASE("Devices should be initializable.", "[device][adaptor-libvulkan]") {
+TEST_CASE("Devices should be initializable.", "[device][loader-libvulkan]") {
   auto ldr = loader{ };
   auto validation_error_count = 0;
   auto messenger_description = debug_messenger_description{
