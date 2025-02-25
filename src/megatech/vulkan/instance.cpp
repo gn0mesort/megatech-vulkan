@@ -12,6 +12,7 @@
 #include <megatech/assertions.hpp>
 
 #include "megatech/vulkan/loader.hpp"
+#include "megatech/vulkan/window_system.hpp"
 #include "megatech/vulkan/debug_messenger_description.hpp"
 
 #include "megatech/vulkan/internal/base/loader_impl.hpp"
@@ -27,9 +28,21 @@ namespace megatech::vulkan {
   instance::instance(const loader& parent, const application_description& app_description) :
   instance{ parent, app_description, { } } { }
 
+  instance::instance(const loader& parent, const window_system& wsi, const application_description& app_description) :
+  instance{ parent, wsi, app_description, { } } { }
+
   instance::instance(const loader& parent, const application_description& app_description,
                      const std::unordered_set<std::string>& requested_layers) :
   m_impl{ new implementation_type{ parent.share_implementation(), app_description, requested_layers } } {
+    MEGATECH_POSTCONDITION(m_impl != nullptr);
+  }
+
+  instance::instance(const loader& parent, const window_system& wsi, const application_description& app_description,
+                     const std::unordered_set<std::string>& requested_layers) :
+  m_impl{
+    new implementation_type{ parent.share_implementation(), wsi.share_implementation(), app_description,
+                             requested_layers }
+  } {
     MEGATECH_POSTCONDITION(m_impl != nullptr);
   }
 
@@ -54,10 +67,22 @@ namespace megatech::vulkan {
   debug_instance::debug_instance(const loader& parent, const application_description& app_description) :
   debug_instance{ parent, app_description, { } } { }
 
+  debug_instance::debug_instance(const loader& parent, const window_system& wsi,
+                                 const application_description& app_description) :
+  debug_instance{ parent, wsi, app_description, { } } { }
+
   debug_instance::debug_instance(const loader& parent, const application_description& app_description,
                                  const std::unordered_set<std::string>& requested_layers) :
   debug_instance{ std::shared_ptr<extended_implementation_type>{
     new extended_implementation_type{ parent.share_implementation(), app_description, requested_layers }
+  } } { }
+
+  debug_instance::debug_instance(const loader& parent, const window_system& wsi,
+                                 const application_description& app_description,
+                                 const std::unordered_set<std::string>& requested_layers) :
+  debug_instance{ std::shared_ptr<extended_implementation_type>{
+    new extended_implementation_type{ parent.share_implementation(), wsi.share_implementation(), app_description,
+                                      requested_layers }
   } } { }
 
   debug_instance::debug_instance(const loader& parent, const application_description& app_description,
@@ -66,6 +91,15 @@ namespace megatech::vulkan {
   debug_instance{ std::shared_ptr<extended_implementation_type>{
     new extended_implementation_type{ parent.share_implementation(), app_description, messenger_description,
                                       requested_layers }
+  } } { }
+
+  debug_instance::debug_instance(const loader& parent, const window_system& wsi,
+                                 const application_description& app_description,
+                                 const debug_messenger_description& messenger_description,
+                                 const std::unordered_set<std::string>& requested_layers) :
+  debug_instance{ std::shared_ptr<extended_implementation_type>{
+    new extended_implementation_type{ parent.share_implementation(), wsi.share_implementation(), app_description,
+                                      messenger_description, requested_layers }
   } } { }
 
   void debug_instance::submit_debug_message(const bitmask types, const bitmask severity,

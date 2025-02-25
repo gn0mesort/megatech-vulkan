@@ -6,8 +6,8 @@
  * @copyright AGPL-3.0-or-later
  * @date 2025
  */
-#ifndef MEGATECH_VULKAN_INTERNAL_BASE_LOADER_IMPL_HPP
-#define MEGATECH_VULKAN_INTERNAL_BASE_LOADER_IMPL_HPP
+#ifndef MEGATECH_VULKAN_INTERNAL_BASE_WINDOW_SYSTEM_IMPL_HPP
+#define MEGATECH_VULKAN_INTERNAL_BASE_WINDOW_SYSTEM_IMPL_HPP
 
 #include <cinttypes>
 
@@ -33,6 +33,11 @@ namespace megatech::vulkan::internal::base {
      */
     window_system_impl() = default;
 
+    /**
+     * @brief Add a range of extenions to the window sytem's list of required extensions.
+     * @tparam Range The range type to accept.
+     * @param r A Range of values that can be inserted into a set of strings.
+     */
     template <std::ranges::forward_range Range>
     void add_required_extensions(Range&& r);
   public:
@@ -51,8 +56,28 @@ namespace megatech::vulkan::internal::base {
     window_system_impl& operator=(window_system_impl&& rhs) = delete;
     /// @endcond
 
+
+    /**
+     * @brief Retrieve the set of Vulkan extensions required by the window_system_impl.
+     * @return A read-only reference to a set of required Vulkan WSI extensions.
+     */
     const std::unordered_set<std::string>& required_extensions() const;
+
+    /**
+     * @brief Determine whether or not the window_system_impl supports checking for presentation support without a
+     *        Vulkan surface.
+     * @details As far as I know, every Vulkan WSI extension supports this. However, some frameworks (e.g., SDL2) do
+     *          not. The result is that it may not be possible to check presentation support using an instance alone.
+     * @return True if the window_system_impl can check presentation support independently. False otherwise.
+     */
     virtual bool can_check_presentation_support() const;
+
+    /**
+     * @brief Determine if a given physical device queue family supports presentation operations.
+     * @return True if the queue family supports presentation operations. False otherwise.
+     * @throw megatech::vulkan::error If the window system does not support checking presentation support without a
+     *                                surface.
+     */
     virtual bool is_presentation_supported(const VkPhysicalDevice physical_device,
                                            const std::uint32_t queue_family) const;
   };

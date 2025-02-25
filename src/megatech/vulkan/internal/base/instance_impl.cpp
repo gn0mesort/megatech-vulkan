@@ -18,6 +18,7 @@
 #include "megatech/vulkan/application_description.hpp"
 
 #include "megatech/vulkan/internal/base/loader_impl.hpp"
+#include "megatech/vulkan/internal/base/window_system_impl.hpp"
 #include "megatech/vulkan/internal/base/physical_device_description_impl.hpp"
 
 #define DECLARE_GLOBAL_PFN(dt, cmd) MEGATECH_VULKAN_INTERNAL_BASE_DECLARE_GLOBAL_PFN(dt, cmd)
@@ -131,8 +132,35 @@ namespace megatech::vulkan::internal::base {
   }
 
   instance_impl::instance_impl(const std::shared_ptr<const parent_type>& parent,
-                              const application_description& app_description,
-                              const std::unordered_set<std::string>& requested_layers) :
+                               const std::shared_ptr<const window_system_impl>& wsi) :
+  m_parent{ parent },
+  m_wsi{ wsi } {
+    if (!parent)
+    {
+      throw error{ "The parent loader cannot be null." };
+    }
+    {
+      DECLARE_GLOBAL_PFN_NO_THROW(parent->dispatch_table(), vkEnumerateInstanceVersion);
+      if (!vkEnumerateInstanceVersion)
+      {
+        throw error{ "Vulkan instances must support Vulkan >=1.3." };
+      }
+      auto ver = std::uint32_t{ 0 };
+      vkEnumerateInstanceVersion(&ver);
+      if (version{ ver } < MINIMUM_VULKAN_VERSION)
+      {
+        throw error{ "Vulkan instances must support Vulkan >=1.3." };
+      }
+    }
+    if (!wsi)
+    {
+      throw error{ "The window system cannot be null." };
+    }
+  }
+
+  instance_impl::instance_impl(const std::shared_ptr<const parent_type>& parent,
+                               const application_description& app_description,
+                               const std::unordered_set<std::string>& requested_layers) :
   instance_impl{ parent } {
     auto layers = std::unordered_set<std::string>{ };
     for (const auto& layer : requested_layers)
@@ -147,6 +175,22 @@ namespace megatech::vulkan::internal::base {
 
   instance_impl::~instance_impl() noexcept {
     destroy_instance();
+  }
+
+  instance_impl::instance_impl(const std::shared_ptr<const parent_type>& parent,
+                               const std::shared_ptr<const window_system_impl>& wsi,
+                               const application_description& app_description,
+                               const std::unordered_set<std::string>& requested_layers) :
+  instance_impl{ parent, wsi } {
+    auto layers = std::unordered_set<std::string>{ };
+    for (const auto& layer : requested_layers)
+    {
+      if (parent->available_layers().contains(layer))
+      {
+        layers.insert(layer);
+      }
+    }
+    create_instance(app_description, layers, m_wsi->required_extensions(), nullptr);
   }
 
   const dispatch::instance::table& instance_impl::dispatch_table() const {
@@ -164,6 +208,19 @@ namespace megatech::vulkan::internal::base {
     return *m_parent;
   }
 
+  bool instance_impl::has_window_system_integration() const {
+    return m_wsi != nullptr;
+  }
+
+  const window_system_impl& instance_impl::window_system_integration() const {
+    MEGATECH_PRECONDITION(m_wsi != nullptr);
+    if (!m_wsi)
+    {
+      throw error{ "This instance does not support window system integration." };
+    }
+    return *m_wsi;
+  }
+
   const std::unordered_set<std::string>& instance_impl::enabled_layers() const {
     return m_enabled_layers;
   }
@@ -175,9 +232,22 @@ namespace megatech::vulkan::internal::base {
   debug_instance_impl::debug_instance_impl(const std::shared_ptr<const parent_type>& parent) :
   instance_impl{ parent } { }
 
+
+  debug_instance_impl::debug_instance_impl(const std::shared_ptr<const parent_type>& parent,
+                                           const std::shared_ptr<const window_system_impl>& wsi) :
+  instance_impl{ parent, wsi } { }
+
   debug_instance_impl::debug_instance_impl(const std::shared_ptr<const parent_type>& parent,
                                            const debug_messenger_description& messenger_description) :
   instance_impl{ parent },
+  m_message_sink{ messenger_description.sink() } {
+    MEGATECH_POSTCONDITION(m_message_sink != nullptr);
+  }
+
+  debug_instance_impl::debug_instance_impl(const std::shared_ptr<const parent_type>& parent,
+                                           const std::shared_ptr<const window_system_impl>& wsi,
+                                           const debug_messenger_description& messenger_description) :
+  instance_impl{ parent, wsi },
   m_message_sink{ messenger_description.sink() } {
     MEGATECH_POSTCONDITION(m_message_sink != nullptr);
   }
@@ -215,6 +285,26 @@ namespace megatech::vulkan::internal::base {
   }
 
   debug_instance_impl::debug_instance_impl(const std::shared_ptr<const parent_type>& parent,
+                                           const std::shared_ptr<const window_system_impl>& wsi,
+                                           const application_description& app_description,
+                                           const std::unordered_set<std::string>& requested_layers) :
+  debug_instance_impl{ parent, wsi } {
+    auto layers = std::unordered_set<std::string>{ };
+    for (const auto& layer : requested_layers)
+    {
+      if (parent->available_layers().contains(layer))
+      {
+        layers.insert(layer);
+      }
+    }
+    auto extensions = std::unordered_set<std::string>{ VK_EXT_DEBUG_UTILS_EXTENSION_NAME };
+    for (auto& extension : window_system_integration().required_extensions())
+    {
+      extensions.insert(extension);
+    }
+    create_instance(app_description, layers, extensions, nullptr);
+  }
+  debug_instance_impl::debug_instance_impl(const std::shared_ptr<const parent_type>& parent,
                                            const application_description& app_description,
                                            const debug_messenger_description& messenger_description,
                                            const std::unordered_set<std::string>& requested_layers) :
@@ -240,6 +330,36 @@ namespace megatech::vulkan::internal::base {
     create_debug_messenger(debug_utils_messenger_info);
   }
 
+  debug_instance_impl::debug_instance_impl(const std::shared_ptr<const parent_type>& parent,
+                                           const std::shared_ptr<const window_system_impl>& wsi,
+                                           const application_description& app_description,
+                                           const debug_messenger_description& messenger_description,
+                                           const std::unordered_set<std::string>& requested_layers) :
+  debug_instance_impl{ parent, wsi, messenger_description } {
+    auto debug_utils_messenger_info = VkDebugUtilsMessengerCreateInfoEXT{ };
+    debug_utils_messenger_info.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
+    debug_utils_messenger_info.messageSeverity =
+      static_cast<VkDebugUtilsMessageSeverityFlagsEXT>(messenger_description.accepted_message_severities());
+    debug_utils_messenger_info.messageType =
+      static_cast<VkDebugUtilsMessageTypeFlagsEXT>(messenger_description.accepted_message_types());
+    debug_utils_messenger_info.pfnUserCallback = vkDebugUtilsMessengerCallbackEXT;
+    debug_utils_messenger_info.pUserData = &m_message_sink;
+    auto layers = std::unordered_set<std::string>{ };
+    for (const auto& layer : requested_layers)
+    {
+      if (parent->available_layers().contains(layer))
+      {
+        layers.insert(layer);
+      }
+    }
+    auto extensions = std::unordered_set<std::string>{ VK_EXT_DEBUG_UTILS_EXTENSION_NAME };
+    for (auto& extension : window_system_integration().required_extensions())
+    {
+      extensions.insert(extension);
+    }
+    create_instance(app_description, layers, extensions, &debug_utils_messenger_info);
+    create_debug_messenger(debug_utils_messenger_info);
+  }
   debug_instance_impl::~debug_instance_impl() noexcept {
     destroy_debug_messenger();
     destroy_instance();

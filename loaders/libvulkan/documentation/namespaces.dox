@@ -1,0 +1,14 @@
+/**
+ * @namespace megatech::vulkan::loaders::libvulkan
+ * @brief Standard Vulkan Loader Classes
+ */
+/// @cond INTERNAL
+/**
+ * @namespace megatech::vulkan::loaders::libvulkan::internal
+ * @brief Standard Vulkan Loader Internal Functionality
+ */
+/**
+ * @namespace megatech::vulkan::loaders::libvulkan::internal::base
+ * @brief Standard Vulkan Loader Cross-Platform Internal Functionality
+ */
+/// @endcond

@@ -27,6 +27,7 @@ namespace megatech::vulkan {
   class loader;
   class application_description;
   class debug_messenger_description;
+  class window_system;
 
   /**
    * @brief A Vulkan instance.
@@ -63,11 +64,30 @@ namespace megatech::vulkan {
     /**
      * @brief Construct an instance.
      * @param parent The parent loader object.
+     * @param wsi A window_system to integrate into the instance.
+     * @param app_description A description of the application constructing the instance.
+     */
+    instance(const loader& parent, const window_system& wsi, const application_description& app_description);
+
+    /**
+     * @brief Construct an instance.
+     * @param parent The parent loader object.
      * @param app_description A description of the application constructing the instance.
      * @param requested_layers A set of layers to enable. Each layer is only enabled if it is available. If a layer
      *                         is unavailable it is ignored.
      */
     instance(const loader& parent, const application_description& app_description,
+             const std::unordered_set<std::string>& requested_layers);
+
+    /**
+     * @brief Construct an instance.
+     * @param parent The parent loader object.
+     * @param wsi A window_system to integrate into the instance.
+     * @param app_description A description of the application constructing the instance.
+     * @param requested_layers A set of layers to enable. Each layer is only enabled if it is available. If a layer
+     *                         is unavailable it is ignored.
+     */
+    instance(const loader& parent, const window_system& wsi, const application_description& app_description,
              const std::unordered_set<std::string>& requested_layers);
 
     /// @cond
@@ -143,11 +163,30 @@ namespace megatech::vulkan {
     /**
      * @brief Construct a debug_instance.
      * @param parent The parent loader object.
+     * @param wsi A window_system to integrate into the debug_instance.
+     * @param app_description A description of the application constructing the debug_instance.
+     */
+    debug_instance(const loader& parent, const window_system& wsi, const application_description& app_description);
+
+    /**
+     * @brief Construct a debug_instance.
+     * @param parent The parent loader object.
      * @param app_description A description of the application constructing the debug_instance.
      * @param requested_layers A set of layers to enable. Each layer is only enabled if it is available. If a layer
      *                         is unavailable it is ignored.
      */
     debug_instance(const loader& parent, const application_description& app_description,
+                   const std::unordered_set<std::string>& requested_layers);
+
+    /**
+     * @brief Construct a debug_instance.
+     * @param parent The parent loader object.
+     * @param wsi A window_system to integrate into the debug_instance.
+     * @param app_description A description of the application constructing the debug_instance.
+     * @param requested_layers A set of layers to enable. Each layer is only enabled if it is available. If a layer
+     *                         is unavailable it is ignored.
+     */
+    debug_instance(const loader& parent, const window_system& wsi, const application_description& app_description,
                    const std::unordered_set<std::string>& requested_layers);
 
     /**
@@ -159,6 +198,19 @@ namespace megatech::vulkan {
      *                         is unavailable it is ignored.
      */
     debug_instance(const loader& parent, const application_description& app_description,
+                   const debug_messenger_description& messenger_description,
+                   const std::unordered_set<std::string>& requested_layers);
+
+    /**
+     * @brief Construct a debug_instance.
+     * @param parent The parent loader object.
+     * @param wsi A window_system to integrate into the debug_instance.
+     * @param app_description A description of the application constructing the debug_instance.
+     * @param messenger_description A description of a debug messenger to allocate during construction.
+     * @param requested_layers A set of layers to enable. Each layer is only enabled if it is available. If a layer
+     *                         is unavailable it is ignored.
+     */
+    debug_instance(const loader& parent, const window_system& wsi, const application_description& app_description,
                    const debug_messenger_description& messenger_description,
                    const std::unordered_set<std::string>& requested_layers);
 

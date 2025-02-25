@@ -33,6 +33,7 @@ namespace megatech::vulkan {
 namespace megatech::vulkan::internal::base {
 
   class loader_impl;
+  class window_system_impl;
   class physical_device_description_impl;
 
   /**
@@ -47,6 +48,7 @@ namespace megatech::vulkan::internal::base {
   private:
     std::unique_ptr<dispatch::instance::table> m_idt{ };
     std::shared_ptr<const parent_type> m_parent{ };
+    std::shared_ptr<const window_system_impl> m_wsi{ };
     std::unordered_set<std::string> m_enabled_layers{ };
     std::unordered_set<std::string> m_enabled_extensions{ };
   protected:
@@ -56,6 +58,15 @@ namespace megatech::vulkan::internal::base {
      * @param parent A read-only shared_ptr to the parent loader implementation.
      */
     explicit instance_impl(const std::shared_ptr<const parent_type>& parent);
+
+    /**
+     * @brief Construct an instance_impl.
+     * @details This is a deferred initialization constructor.
+     * @param parent A read-only shared_ptr to the parent loader implementation.
+     * @param wsi A read-only shared_ptr to the window_system's implementation. This must not be null.
+     */
+    instance_impl(const std::shared_ptr<const parent_type>& parent,
+                  const std::shared_ptr<const window_system_impl>& wsi);
 
     /**
      * @brief Create an instance_impl's underlying VkInstance.
@@ -90,6 +101,19 @@ namespace megatech::vulkan::internal::base {
      *                         is unavailable it is ignored.
      */
     instance_impl(const std::shared_ptr<const parent_type>& parent,
+                  const application_description& app_description,
+                  const std::unordered_set<std::string>& requested_layers);
+
+    /**
+     * @brief Construct an instance_impl.
+     * @param parent A read-only shared_ptr to the parent loader's implementation. This must not be null.
+     * @param wsi A read-only shared_ptr to the window_system's implementation. This must not be null.
+     * @param app_description A description of the client application to pass to the underlying Vulkan implementation.
+     * @param requested_layers A set of layers to enable. Each layer is only enabled if it is available. If a layer
+     *                         is unavailable it is ignored.
+     */
+    instance_impl(const std::shared_ptr<const parent_type>& parent,
+                  const std::shared_ptr<const window_system_impl>& wsi,
                   const application_description& app_description,
                   const std::unordered_set<std::string>& requested_layers);
 
@@ -128,6 +152,19 @@ namespace megatech::vulkan::internal::base {
     const parent_type& parent() const;
 
     /**
+     * @brief Determine whether or not the instance_impl has an integrated window system.
+     * @return True if there is an window system integration. False otherwise.
+     */
+    bool has_window_system_integration() const;
+
+    /**
+     * @brief Retrieve the instance_impl's window_system_impl if it has one.
+     * @return A read-only reference to the parent window_system_impl.
+     * @throw megatech::vulkan::error If the instance_impl does not have any integrated window system.
+     */
+    const window_system_impl& window_system_integration() const;
+
+    /**
      * @brief Retrieve the instance_impl's enabled layers.
      * @return a read-only reference to a set of Vulkan layers.
      */
@@ -156,6 +193,14 @@ namespace megatech::vulkan::internal::base {
     explicit debug_instance_impl(const std::shared_ptr<const parent_type>& parent);
 
     /**
+     * @brief Construct an instance_impl.
+     * @details This is a deferred initialization constructor.
+     * @param parent A read-only shared_ptr to the parent loader implementation.
+     * @param wsi A read-only shared_ptr to the window_system's implementation. This must not be null.
+     */
+    debug_instance_impl(const std::shared_ptr<const parent_type>& parent,
+                        const std::shared_ptr<const window_system_impl>& wsi);
+    /**
      * @brief Construct a debug_instance_impl.
      * @details This is a deferred initialization constructor.
      * @param parent A read-only shared_ptr to the parent loader.
@@ -163,6 +208,18 @@ namespace megatech::vulkan::internal::base {
      *                              constructor.
      */
     debug_instance_impl(const std::shared_ptr<const parent_type>& parent,
+                        const debug_messenger_description& messenger_description);
+
+    /**
+     * @brief Construct an instance_impl.
+     * @details This is a deferred initialization constructor.
+     * @param parent A read-only shared_ptr to the parent loader implementation.
+     * @param wsi A read-only shared_ptr to the window_system's implementation. This must not be null.
+     * @param messenger_description A description of a debug messenger. The sink function is taken and copied in this
+     *                              constructor.
+     */
+    debug_instance_impl(const std::shared_ptr<const parent_type>& parent,
+                        const std::shared_ptr<const window_system_impl>& wsi,
                         const debug_messenger_description& messenger_description);
 
     /**
@@ -196,6 +253,19 @@ namespace megatech::vulkan::internal::base {
     /**
      * @brief Construct a debug_instance_impl.
      * @param parent A read-only shared_ptr to the parent loader's implementation. This must not be null.
+     * @param wsi A read-only shared_ptr to the window_system's implementation. This must not be null.
+     * @param app_description A description of the client application to pass to the underlying Vulkan implementation.
+     * @param requested_layers A set of layers to enable. Each layer is only enabled if it is available. If a layer
+     *                         is unavailable it is ignored.
+     */
+    debug_instance_impl(const std::shared_ptr<const parent_type>& parent,
+                        const std::shared_ptr<const window_system_impl>& wsi,
+                        const application_description& app_description,
+                        const std::unordered_set<std::string>& requested_layers);
+
+    /**
+     * @brief Construct a debug_instance_impl.
+     * @param parent A read-only shared_ptr to the parent loader's implementation. This must not be null.
      * @param app_description A description of the client application to pass to the underlying Vulkan implementation.
      * @param messenger_description A description of a debug messenger that will be constructed alongside the
      *                              underlying Vulkan instance. Dependencies of the messenger description must have
@@ -204,6 +274,23 @@ namespace megatech::vulkan::internal::base {
      *                         is unavailable it is ignored.
      */
     debug_instance_impl(const std::shared_ptr<const parent_type>& parent,
+                        const application_description& app_description,
+                        const debug_messenger_description& messenger_description,
+                        const std::unordered_set<std::string>& requested_layers);
+
+    /**
+     * @brief Construct a debug_instance_impl.
+     * @param parent A read-only shared_ptr to the parent loader's implementation. This must not be null.
+     * @param wsi A read-only shared_ptr to the window_system's implementation. This must not be null.
+     * @param app_description A description of the client application to pass to the underlying Vulkan implementation.
+     * @param messenger_description A description of a debug messenger that will be constructed alongside the
+     *                              underlying Vulkan instance. Dependencies of the messenger description must have
+     *                              a longer lifetime than the underlying instance.
+     * @param requested_layers A set of layers to enable. Each layer is only enabled if it is available. If a layer
+     *                         is unavailable it is ignored.
+     */
+    debug_instance_impl(const std::shared_ptr<const parent_type>& parent,
+                        const std::shared_ptr<const window_system_impl>& wsi,
                         const application_description& app_description,
                         const debug_messenger_description& messenger_description,
                         const std::unordered_set<std::string>& requested_layers);
